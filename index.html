@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進階英文表達學習 - 161 句精選</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f43f5e;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg);
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 頂部分頁切換 */
+        .tabs {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 10px;
+            color: var(--text-light);
+            font-weight: bold;
+            transition: 0.3s ease;
+            font-size: 15px;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3);
+        }
+
+        /* 內容卡片 */
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 28px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            position: relative;
+            min-height: 420px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .category-tag {
+            background: #fff1f2;
+            color: #e11d48;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .id-label {
+            color: #cbd5e1;
+            font-size: 24px;
+            font-weight: 800;
+            font-family: serif;
+        }
+
+        .bookmark-btn {
+            position: absolute;
+            top: 35px;
+            right: 35px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 32px;
+            color: #e2e8f0;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bookmark-btn.active {
+            color: var(--primary);
+        }
+
+        .bookmark-btn:active {
+            transform: scale(1.3);
+        }
+
+        .section-label {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .content-box {
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .scenario-text {
+            font-size: 18px;
+            color: var(--text-dark);
+            font-style: italic;
+            border-left: 5px solid #fecdd3;
+            padding-left: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .original-text {
+            font-size: 22px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .advanced-text {
+            font-size: 28px;
+            color: #e11d48;
+            font-weight: 800;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        /* 導覽按鈕區 */
+        .nav-grid {
+            width: 100%;
+            max-width: 600px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: none;
+            padding: 18px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            cursor: pointer;
+            color: #475569;
+            font-size: 22px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: #fff1f2;
+            color: var(--primary);
+        }
+
+        .nav-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .empty-msg {
+            text-align: center;
+            margin-top: 150px;
+            color: #94a3b8;
+            font-size: 18px;
+        }
+
+        @media (max-width: 500px) {
+            .card { padding: 25px; min-height: 450px; }
+            .advanced-text { font-size: 24px; }
+            .nav-btn { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tabs">
+        <button class="tab active" id="tab-regular" onclick="switchMode('regular')">Regular (161)</button>
+        <button class="tab" id="tab-bookmark" onclick="switchMode('bookmark')">Bookmarks <span id="fav-count"></span></button>
+    </div>
+
+    <div id="app-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        </div>
+
+    <div class="nav-grid">
+        <button class="nav-btn" onclick="goTo('first')" title="最前"><i class="fas fa-angles-left"></i></button>
+        <button class="nav-btn" onclick="goTo('prev')" title="前一個"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="goTo('next')" title="後一個"><i class="fas fa-chevron-right"></i></button>
+        <button class="nav-btn" onclick="goTo('last')" title="最後"><i class="fas fa-angles-right"></i></button>
+    </div>
+
+    <script>
+        // --- 核心資料 (161 筆) ---
+        const rawData = [
+            { "id": 1, "category": "日常感受", "scenario": "當你想表達一整天非常疲憊，且消耗了比預期更多的精力時。", "original": "I'm tired.", "advanced": "It's been one of those days where everything required just a little more energy than I expected." },
+            { "id": 2, "category": "觀點表達", "scenario": "在商務或正式場合，有禮貌且成熟地提出對某個想法的看法。", "original": "I think it's good.", "advanced": "From my point of view, it actually seems like a well-thought-out idea." },
+            { "id": 3, "category": "進度與困難", "scenario": "當事情進展不如預期，但你想展現出冷靜處理問題的自信感。", "original": "It didn't work.", "advanced": "Things didn't quite go according to plan, but I managed to work my way through it." },
+            { "id": 4, "category": "禮貌請求", "scenario": "請求對方再次說明，語氣溫暖、尊重且謙虛。", "original": "Repeat that.", "advanced": "Would you mind going over that one more time?" },
+            { "id": 5, "category": "糾正誤解", "scenario": "當發生誤會時，用平穩且平衡的口吻來重述自己的意思。", "original": "That's not what I meant.", "advanced": "I think there may have been a slight misunderstanding. Let me try to rephrase that." },
+            { "id": 6, "category": "委婉反對", "scenario": "在不認同對方時，仍能維持對話的流暢與對他人的尊重。", "original": "I don't agree.", "advanced": "I see where you're coming from, but I'm not entirely convinced we're looking at it the same way." },
+            { "id": 7, "category": "情感連結", "scenario": "觀察到對方壓力很大或負擔過重，展現同理心與情感覺察。", "original": "Don't worry.", "advanced": "It sounds like you've been carrying a lot on your shoulders lately." },
+            { "id": 8, "category": "提供建議", "scenario": "以不強求、自然且客氣的方式提議，讓事情變得更輕鬆。", "original": "You should try this.", "advanced": "You might want to consider giving this a try; it could make things a lot easier." },
+            { "id": 9, "category": "表達困惑", "scenario": "當你還在消化資訊，尚未完全理解或掌握情況時。", "original": "I'm not sure.", "advanced": "I haven't fully wrapped my head around it yet." },
+            { "id": 10, "category": "近況描述", "scenario": "回覆朋友詢問，描述一整天雖然有意外，但仍掌控全局。", "original": "How was your day?", "advanced": "Well, it was a mix of productivity and small surprises; overall, I think I managed to stay on top of things." },
+            { "id": 11, "category": "深層關懷", "scenario": "當朋友分享壓力大時，主動詢問細節以提供情緒出口。", "original": "I'm sorry to hear that.", "advanced": "I'm sorry to hear that; do you want to talk about what made it so overwhelming?" },
+            { "id": 12, "category": "計畫安排", "scenario": "約定時間時使用模糊時間詞，聽起來更隨性且不具壓力。", "original": "Let's meet at 5.", "advanced": "How about we aim for around 5-ish? That should give us plenty of time." },
+            { "id": 13, "category": "個人偏好", "scenario": "當你想展現好相處、有彈性的隨和態度時。", "original": "I don't mind.", "advanced": "I'm pretty flexible; whatever works best for you." },
+            { "id": 14, "category": "喜悅回應", "scenario": "聽到好消息時，表達真誠且溫暖的高興。", "original": "That's great.", "advanced": "That's wonderful to hear; I'm genuinely happy for you." },
+            { "id": 15, "category": "平衡評論", "scenario": "在評論某事時，既肯定其潛力也中肯提出需要調整之處。", "original": "I think it's okay.", "advanced": "To be honest, I think it has potential, but it could benefit from a few adjustments." },
+            { "id": 16, "category": "近況狀態", "scenario": "回覆「最近過得如何」，表達正在努力保持平衡並應對生活細節。", "original": "I'm fine.", "advanced": "I've been doing fairly well, just trying to stay grounded and manage everything as it comes." },
+            { "id": 17, "category": "感謝讚美", "scenario": "當別人稱讚你時，表達你非常看重對方的這份肯定。", "original": "Thank you.", "advanced": "That means a lot; I really appreciate you saying that." },
+            { "id": 18, "category": "遲到致歉", "scenario": "遲到時不僅道歉，還禮貌地感謝對方的等待與包容。", "original": "Sorry I'm late.", "advanced": "Thank you for your patience; I got caught up in something unexpectedly." },
+            { "id": 19, "category": "擔憂關注", "scenario": "觀察到對方分享的事情令人擔心，主動提出一起商量對策。", "original": "That's worrying.", "advanced": "I can hear the concern in your voice; do you want to talk through it together?" },
+            { "id": 20, "category": "確認跟進", "scenario": "當對方說法令人困惑，用這句話來確保自己沒有聽錯細節。", "original": "I don't get it.", "advanced": "Let me make sure I'm following; you're saying that the schedule changed at the last minute, right?" },
+            { "id": 21, "category": "強烈共鳴", "scenario": "當對方的想法與你完全一致時，精準表達你也有同樣的念頭。", "original": "Exactly.", "advanced": "That's precisely what I was thinking." },
+            { "id": 22, "category": "深度謝意", "scenario": "感謝對方花費時間與心力在今天給予你的實質幫助。", "original": "Thanks for helping.", "advanced": "I really appreciate you taking the time to help me out today." },
+            { "id": 23, "category": "肯定體貼", "scenario": "當對方做了貼心的舉動，強調這對你而言意義重大。", "original": "You are kind.", "advanced": "I can't tell you how much that means; thank you for being so thoughtful." },
+            { "id": 24, "category": "請求引導", "scenario": "需要對方一步步引導你重新理解某個過程或邏輯時。", "original": "Repeat that.", "advanced": "Could you walk me through that one more time?" },
+            { "id": 25, "category": "專案更新", "scenario": "描述進度緩慢但有穩步進展，並對結果抱持樂觀態度。", "original": "It's going okay.", "advanced": "It's coming together slowly but steadily; overall, I'm feeling optimistic about it." },
+            { "id": 26, "category": "禮貌婉拒", "scenario": "婉拒邀約，並說明已經有其他既定行程。", "original": "I can't come.", "advanced": "I'd love to join you, but I've already got something scheduled around that time." },
+            { "id": 27, "category": "展現好奇", "scenario": "當對方講述故事時，表現出極大的興趣，鼓勵對方繼續說下去。", "original": "Explain.", "advanced": "I'm really interested; what happened next?" },
+            { "id": 28, "category": "表達寬慰", "scenario": "在得知事情最後順利落幕時，表達心中的如釋重負。", "original": "I'm glad.", "advanced": "I'm so relieved everything turned out well in the end." },
+            { "id": 29, "category": "興奮祝賀", "scenario": "對別人的好消息表達最誠摯且熱情的期待與興奮。", "original": "That's great news.", "advanced": "That's fantastic news; I'm genuinely excited for you." },
+            { "id": 30, "category": "問候近況", "scenario": "以一種關心生活節奏的方式詢問對方這一週過得如何。", "original": "How was your week?", "advanced": "So, how has your week been treating you so far?" },
+            { "id": 31, "category": "坦誠意見", "scenario": "給予平衡的回饋，指出方向正確但仍有進步空間。", "original": "It's good but could be better.", "advanced": "If I'm being completely honest, I think it's moving in the right direction, but there's still room for improvement." },
+            { "id": 32, "category": "觀察關懷", "scenario": "察覺對方情緒低落或異常沉默，溫柔地確認狀況。", "original": "Are you okay?", "advanced": "You seem a bit quieter than usual; everything all right?" },
+            { "id": 33, "category": "深度提問", "scenario": "對對方的故事表示興趣，並進一步詢問當下的心理感受。", "original": "Really?", "advanced": "That's interesting; how did you feel about it at the time?" },
+            { "id": 34, "category": "驚訝回應", "scenario": "當事情出乎意料，讓你感到措手不解時。", "original": "I didn't expect that.", "advanced": "That caught me off-guard; I wasn't expecting it at all." },
+            { "id": 35, "category": "主動解題", "scenario": "願意協助解決問題，並詢問核心難點在哪裡。", "original": "I can help.", "advanced": "I'd be happy to help you work through it; what seems to be the main issue?" },
+            { "id": 36, "category": "體貼提問", "scenario": "面對對方複雜的情況，詢問對方在心理上如何撐過來。", "original": "That's hard.", "advanced": "That sounds like a lot to process; how are you holding up?" },
+            { "id": 37, "category": "真誠鼓勵", "scenario": "肯定對方的能力與過往經驗，賦予對方處理難關的信心。", "original": "You can do it.", "advanced": "I genuinely believe you're capable; you've handled difficult things before, and you can handle this too." },
+            { "id": 38, "category": "成果肯定", "scenario": "讚賞對方的付出，並指出完成這件事一定帶來極大的成就感。", "original": "Good job.", "advanced": "That must feel incredibly satisfying; you've clearly put a lot of effort into it." },
+            { "id": 39, "category": "謹慎提點", "scenario": "提醒對方不要操之過急，需要花時間深思熟慮後再行動。", "original": "Be careful.", "advanced": "Just make sure you're not rushing into it; take a moment to think it through." },
+            { "id": 40, "category": "肯定觀點", "scenario": "認同對方的論點，並承認自己之前未曾從該角度考慮過。", "original": "You are right.", "advanced": "That's a fair point; I hadn't considered it from that angle." },
+            { "id": 41, "category": "決策評估", "scenario": "認同決策的艱難，同時肯定對方已經做過了充分的思考。", "original": "It's a hard choice.", "advanced": "It's a tough call, but it sounds like you've thought it through carefully." },
+            { "id": 42, "category": "生活對齊", "scenario": "給予建議時，引導對方思考哪一個選項更符合其理想的生活方式。", "original": "Choose the best one.", "advanced": "Both opportunities sound promising, but it really depends on which one aligns better with the kind of lifestyle you want." },
+            { "id": 43, "category": "韌性肯定", "scenario": "承認挑戰的艱巨，同時高度讚賞對方在應對中展現出的內在力量。", "original": "That's very difficult.", "advanced": "That sounds incredibly challenging, but the way you're handling it shows a lot of strength." },
+            { "id": 44, "category": "深度感謝", "scenario": "感謝對方的陪伴，強調對方的存在對你而言具有超越言語的價值。", "original": "Thanks for being here.", "advanced": "I really appreciate you being here; it means more than you know." },
+            { "id": 45, "category": "展現理解", "scenario": "用肯定的語氣告訴對方他的解釋很有道理，你完全明白其思路。", "original": "Okay.", "advanced": "That makes a lot of sense; i see where you're coming from." },
+            { "id": 46, "category": "優雅寬容", "scenario": "接受道歉，並表達願意一起解決問題的協作態度。", "original": "It's okay.", "advanced": "I appreciate you saying that, and don't worry, we'll sort it out together." },
+            { "id": 47, "category": "引導自信", "scenario": "帶領對方按部就班地處理困惑，並傳達必能解決問題的信心。", "original": "I will help you.", "advanced": "Let's go through it step by step; i'm sure we'll figure it out." },
+            { "id": 48, "category": "久別重逢", "scenario": "表達對長時間未見的感觸，並親切地開啟近況交流。", "original": "Long time no see.", "advanced": "It feels like ages since we last caught up; how have you been?" },
+            { "id": 49, "category": "情感消化", "scenario": "當面對重大生活轉折，表達自己還在整理思緒與感受。", "original": "I don't know yet.", "advanced": "I'm still trying to figure out how I feel about it; i need a bit more time to process everything." },
+            { "id": 50, "category": "失誤安撫", "scenario": "將犯錯視為正常的學習過程，緩解對方的焦慮感。", "original": "Don't worry about the mistake.", "advanced": "It's completely normal to feel that way; just remember that mistakes are part of the learning process." },
+            { "id": 51, "category": "細節肯定", "scenario": "肯定對方的用心程度，並指出這份努力在成果中清晰可見。", "original": "You did well.", "advanced": "You've clearly put a lot of thought into this; it really shows." },
+            { "id": 52, "category": "溝通調節", "scenario": "請求對方稍微放慢速度，以確保自己能準確吸收每一項資訊。", "original": "Slow down.", "advanced": "Would you mind going a little slower? I want to make sure I'm keeping up." },
+            { "id": 53, "category": "當日規劃", "scenario": "描述今日已有安排但同時保持開放的心態，順應事態發展。", "original": "I have plans.", "advanced": "I've got a few things lined up, but I'm taking the day as it comes." },
+            { "id": 54, "category": "壓力回覆", "scenario": "坦誠這一週很忙碌，但自己仍能良好應對，並詢問對方狀況。", "original": "I'm busy but okay.", "advanced": "It's been a bit hectic, but I'm managing; how about you?" },
+            { "id": 55, "category": "有趣反應", "scenario": "對令人難以置信或極度有趣的故事做出的強烈且自然的反應。", "original": "Really?", "advanced": "You're kidding! That must have been quite a moment." },
+            { "id": 56, "category": "誠信感謝", "scenario": "感謝對方願意對你敞開心扉分享個人私事，表達你對這份誠實的重視。", "original": "Thanks for being honest.", "advanced": "Thank you for being so open with me; i really value your honesty." },
+            { "id": 57, "category": "尷尬緩解", "scenario": "當對方感到丟臉時，強調每個人都會經歷類似時刻，並不孤單。", "original": "That's embarrassing.", "advanced": "We've all been there; don't worry, it happens to everyone." },
+            { "id": 58, "category": "期盼祝賀", "scenario": "對別人期待已久的未來計畫表達興奮，並肯定對方的期待感。", "original": "That sounds good.", "advanced": "That sounds incredibly exciting; i can tell you've been looking forward to it." },
+            { "id": 59, "category": "完工預告", "scenario": "描述任務已接近尾聲，只剩下最後幾塊拼圖需要組合。", "original": "Almost done.", "advanced": "I'm getting there; just a few more pieces to put together." },
+            { "id": 60, "category": "穩定人心", "scenario": "在不確定性中給予對方明確的安心感，強調會攜手共同解決。", "original": "Don't worry.", "advanced": "No need to worry; we'll figure it out together, step by step." },
+            { "id": 61, "category": "徵詢視角", "scenario": "主動尋求對方的觀點，而非只是簡單問對方的想法。", "original": "What do you think?", "advanced": "I'd love to hear your thoughts; what's your perspective on it?" },
+            { "id": 62, "category": "重大反應", "scenario": "對突發或意想不到的消息做出回應，表示這徹底改變了局面。", "original": "I'm surprised.", "advanced": "Wow, that completely changes things; i wasn't expecting that." },
+            { "id": 63, "category": "應對之道", "scenario": "在被問到如何處理難題時，強調保持冷靜與按部就班的節奏。", "original": "I stayed calm.", "advanced": "I just tried to stay calm and take things one step at a time." },
+            { "id": 64, "category": "積極聆聽", "scenario": "在對方講述時簡短回應，示意你正全神貫注地傾聽並鼓勵繼續。", "original": "I'm listening.", "advanced": "I'm with you; go on." },
+            { "id": 65, "category": "共情肯定", "scenario": "認同對方的遭遇非常艱辛，並感謝對方對你的信任與分享。", "original": "I understand.", "advanced": "That must have been really difficult for you; i'm glad you felt comfortable sharing it with me." },
+            { "id": 66, "category": "消耗認同", "scenario": "當對方表示精疲力竭時，肯定其最近的辛勞，並讓這種疲勞感合理化。", "original": "You are tired.", "advanced": "You've had a lot on your plate recently; it makes sense that you're feeling drained." },
+            { "id": 67, "category": "專注回饋", "scenario": "確保對方知道你跟上了進度，並主動詢問故事的後續。", "original": "I'm listening.", "advanced": "I'm following you so far; what happened after that?" },
+            { "id": 68, "category": "職場成就", "scenario": "對工作上的成就給予高度評價，並引導對方為自己感到自豪。", "original": "Nice job.", "advanced": "That's really impressive; you must feel proud of yourself." },
+            { "id": 69, "category": "尊重節奏", "scenario": "鼓勵對方不必急於做決定，等到身心準備好再行動。", "original": "Do whatever you want.", "advanced": "Take your time; there's no need to rush into anything before you feel ready." },
+            { "id": 70, "category": "深度認同", "scenario": "表達你不僅理解對方的意思，而且在情感上也與對方站在同一陣線。", "original": "I agree.", "advanced": "I completely get what you mean, and i feel the same way." },
+            { "id": 71, "category": "重要安撫", "scenario": "對重要事件前的焦慮給予肯定，同時提醒對方過往成功的經驗。", "original": "Don't be nervous.", "advanced": "It's normal to feel a bit anxious before something important, but you've handled things like this before." },
+            { "id": 72, "category": "角度差異", "scenario": "即便認同對方部分觀點，也以溫和的方式帶出不同的觀察角度。", "original": "I don't agree.", "advanced": "I see your point, but I think I'm looking at it from a slightly different angle." },
+            { "id": 73, "category": "情感驚奇", "scenario": "對某個情感上的轉折或結果表示完全出乎意料，深受震撼。", "original": "I'm surprised.", "advanced": "I wasn't expecting that outcome at all; it really took me by surprise." },
+            { "id": 74, "category": "安全承諾", "scenario": "提供一個安全的空間，讓對方知道不論何時你都願意傾聽。", "original": "Talk to me anytime.", "advanced": "If you ever feel like talking about it, I'm here to listen." },
+            { "id": 75, "category": "深度感謝", "scenario": "強調對方的支持具有巨大的意義，而不僅僅是一般的幫忙。", "original": "Thanks for your help.", "advanced": "Thank you so much; your support means more than you know." },
+            { "id": 76, "category": "挫敗共感", "scenario": "當對方憤怒時，承認其挫折感的合理性，並提議一起梳理情緒。", "original": "Calm down.", "advanced": "I can hear how frustrating this has been for you; let's take a moment and figure things out together." },
+            { "id": 77, "category": "強烈好奇", "scenario": "表達對某個話題想聽得更多的渴望，展現主動的學習熱情。", "original": "Tell me more.", "advanced": "I'd love to hear more; what happened after that?" },
+            { "id": 78, "category": "前進導向", "scenario": "接受道歉並強調放下過去，將重心放在未來的進展上。", "original": "It's fine.", "advanced": "I appreciate the apology; let's focus on moving forward." },
+            { "id": 79, "category": "禮貌解惑", "scenario": "謙虛地表達自己沒完全聽懂，請求對方針對某個部分再做解釋。", "original": "I don't get it.", "advanced": "I'm not entirely sure I understand; could you explain that part again?" },
+            { "id": 80, "category": "期待肯定", "scenario": "對別人的週末或其他計畫給予正面評價，並預祝對方享受其中。", "original": "Sounds good.", "advanced": "That sounds like a wonderful plan; you must be really looking forward to it." },
+            { "id": 81, "category": "遺憾表達", "scenario": "即便對結果感到遺憾，仍展現出理解情況為何如此發生的成熟態度。", "original": "That's too bad.", "advanced": "I was really hoping things would turn out differently, but I understand how it happened." },
+            { "id": 82, "category": "壓力自處", "scenario": "描述高壓力的生活現況，同時強調自己正在穩定地前進。", "original": "I am busy.", "advanced": "It's been a pretty demanding week, but I'm taking things one step at a time." },
+            { "id": 83, "category": "能量肯定", "scenario": "肯定對方所投入的巨大心力，並指出這在結果中得到了回報。", "original": "You worked hard.", "advanced": "You've clearly put a lot of energy into this; it really shows in the result." },
+            { "id": 84, "category": "情感慰問", "scenario": "對對方的痛苦經驗表達真誠的遺憾與對艱難程度的認同。", "original": "That's sad.", "advanced": "I'm really sorry you had to go through that; it must have been incredibly tough." },
+            { "id": 85, "category": "試水建議", "scenario": "在對方不確定時，提議先從一個小步驟開始嘗試，感受一下反饋。", "original": "Try it.", "advanced": "If you're unsure, maybe try taking a small step first and see how it feels." },
+            { "id": 86, "category": "值得肯定", "scenario": "對別人的成功表達高度興奮，並強調這是對方憑實力應得的時刻。", "original": "I'm happy for you.", "advanced": "I'm genuinely excited for you; you've earned every bit of this moment." },
+            { "id": 87, "category": "極度安撫", "scenario": "在極度混亂中，提醒對方深呼吸，肯定對方已經做得很棒了。", "original": "Don't be overwhelmed.", "advanced": "Just breathe; you're doing the best you can, and that's all anyone can ask." },
+            { "id": 88, "category": "細節澄清", "scenario": "因為想確保聽清楚每個字，而有禮貌地請求對方重複最後一部分內容。", "original": "What?", "advanced": "Sorry, could you repeat the last part? I want to make sure I heard you correctly." },
+            { "id": 89, "category": "欣慰回應", "scenario": "表達好消息帶給你的喜悅感，讓你整個人都開心了起來。", "original": "I'm glad to hear that.", "advanced": "That puts a big smile on my face; i'm really glad things are going well for you." },
+            { "id": 90, "category": "彈性安排", "scenario": "不給予確切的承諾，而是表示會確認行程後再回覆對方。", "original": "Maybe.", "advanced": "I might be; let me check my schedule and get back to you." },
+            { "id": 91, "category": "榮譽肯定", "scenario": "將一項成就定義為「有意義的成就」，鼓勵對方為此感到驕傲。", "original": "You did a good job.", "advanced": "You should feel really proud; that's a meaningful achievement." },
+            { "id": 92, "category": "思維整理", "scenario": "承認情況複雜，表達自己正處於「整理思維」的階段。", "original": "I don't know.", "advanced": "I'm still sorting out my thoughts; it's a bit complicated." },
+            { "id": 93, "category": "塵埃落定", "scenario": "在焦心等待事情解決後，表達心中的如釋重負與滿足。", "original": "I'm glad it's over.", "advanced": "I'm so glad everything settled down; i've been hoping for that." },
+            { "id": 94, "category": "收尾階段", "scenario": "更新任務狀態，表示大部都已完成，僅剩細微末節。", "original": "I'm done.", "advanced": "I've wrapped up most of it; i just need to finalize a few small things." },
+            { "id": 95, "category": "保持聯繫", "scenario": "給予對方空間，請對方在方便時再告知後續進展。", "original": "Tell me later.", "advanced": "Whenever you get the chance, let me know how things turn out." },
+            { "id": 96, "category": "合情認同", "scenario": "肯定對方的反應是極其合理且可以被完全理解的。", "original": "I understand why.", "advanced": "I completely understand why you reacted that way; it makes perfect sense." },
+            { "id": 97, "category": "常態化焦慮", "scenario": "指出任何人在相同情況下都會有同樣的擔憂，讓對方感到正常。", "original": "Don't be afraid.", "advanced": "It's completely understandable to feel that way; anyone would." },
+            { "id": 98, "category": "堅定守護", "scenario": "許下承諾，不論對方需要什麼，你都會在身旁支持。", "original": "I am here.", "advanced": "I'm here for you, whatever you need." },
+            { "id": 99, "category": "進度肯定", "scenario": "對於正在進行中的事物給予正向的導向評價與肯定。", "original": "It's good.", "advanced": "I think it's headed in a really positive direction; you're definitely on the right track." },
+            { "id": 100, "category": "傾聽鼓勵", "scenario": "給予對方一個無阻礙的說話空間，示意對方大膽說下去。", "original": "Keep talking.", "advanced": "I'm listening; go ahead." },
+            { "id": 101, "category": "信任回饋", "scenario": "對對方的信任表示感謝，並體諒這份傾訴可能帶來的心理負擔。", "original": "Thanks for telling me.", "advanced": "Thank you for trusting me with that; i know it can't be easy to talk about." },
+            { "id": 102, "category": "低潮鼓勵", "scenario": "在對方失去動力時，肯定「仍在嘗試」這件事本身就是有價值的。", "original": "Keep trying.", "advanced": "It's completely normal to feel unmotivated sometimes; what matters is that you're still trying." },
+            { "id": 103, "category": "挫敗共感", "scenario": "指出這種憤怒或挫敗感是人之常情，並詢問是否願意深談。", "original": "Don't be frustrated.", "advanced": "That would frustrate anyone; do you want to talk through what happened?" },
+            { "id": 104, "category": "榮譽引導", "scenario": "定義一項成就是精彩的，並鼓勵對方從心底為自己感到自豪。", "original": "Nice job.", "advanced": "That's a wonderful achievement; you should feel genuinely proud of yourself." },
+            { "id": 105, "category": "委婉質詢", "scenario": "當沒聽清意思時，用一種不突兀、不無禮的方式請對方詳加解釋。", "original": "What do you mean?", "advanced": "Sorry, I'm not entirely sure I caught that; could you explain it a bit more?" },
+            { "id": 106, "category": "重擔肯定", "scenario": "肯定對方在同時應對多項職責時所展現出的優異處理能力。", "original": "You did well with everything.", "advanced": "It sounds like you've had so much to manage; you've handled it incredibly well." },
+            { "id": 107, "category": "幽默聯想", "scenario": "對有趣的故事給予大笑反應，並形容那畫面感一定非常強烈。", "original": "That's funny.", "advanced": "That's hilarious! I can only imagine what that must have looked like." },
+            { "id": 108, "category": "故事後續", "scenario": "表現出強烈的好奇心，特別是關於事情最終結局的好奇。", "original": "What happened at the end?", "advanced": "I'm really curious; how did things turn out in the end?" },
+            { "id": 109, "category": "考前安撫", "scenario": "對考前或重大事件前的緊張表示理解，並肯定對方的準備工作。", "original": "Don't be nervous.", "advanced": "It's completely natural to feel nervous; but you've prepared well, you're going to do just fine." },
+            { "id": 110, "category": "逐步指引", "scenario": "在對方感到迷惘時，提點不必急於一次解決所有事，一次專注一刻即可。", "original": "What's next?", "advanced": "You don't have to figure it all out at once; take it one moment at a time." },
+            { "id": 111, "category": "忙碌認同", "scenario": "肯定對方最近在多重任務間切換的辛苦，表示其疲累非常合理。", "original": "I know you're busy.", "advanced": "That makes complete sense; you've been juggling so much lately." },
+            { "id": 112, "category": "零壓力傾聽", "scenario": "提供一個完全沒有壓力的空間，讓對方在想說的時候隨時可以說。", "original": "Talk to me if you want.", "advanced": "If there's anything you want to share, I'm here; no pressure at all." },
+            { "id": 113, "category": "遺憾慰問", "scenario": "對對方的失望感表示真誠遺憾，並強調你明白這件事對他的重要性。", "original": "I'm sorry.", "advanced": "I'm really sorry things didn't go as you hoped; i know how much it meant to you." },
+            { "id": 114, "category": "意料之外", "scenario": "描述事情發展出現了令人震驚的轉折，完全超乎預期。", "original": "That's unexpected.", "advanced": "Wow, that took quite a turn; i wasn't expecting that at all." },
+            { "id": 115, "category": "應對現狀", "scenario": "描述應對壓力的現況，坦承有好有壞，但自己正在盡力而為。", "original": "I am managing.", "advanced": "I'm managing; some days are easier than others, but I'm doing my best." },
+            { "id": 116, "category": "中立建議", "scenario": "將情況描述為「有趣的處境」，並指出這取決於對方的核心價值觀。", "original": "It's up to you.", "advanced": "It's an interesting situation; i think it depends on what matters most to you." },
+            { "id": 117, "category": "決策信心", "scenario": "鼓勵對方不論做出什麼決定，都要相信當時的自己已經盡力了。", "original": "Trust yourself.", "advanced": "Whatever decision you make, trust that you're doing the best you can with what you know now." },
+            { "id": 118, "category": "窩心消息", "scenario": "將對方分享的好消息定義為「窩心的消息」，並表達純粹的快樂。", "original": "That's good news.", "advanced": "That's such heartwarming news; i'm genuinely happy for you." },
+            { "id": 119, "category": "價值肯定", "scenario": "告訴對方他的存在本身就很重要，即便他自己沒察覺，他人也深受感染。", "original": "You are important.", "advanced": "Your presence really makes a difference; you might not see it, but others feel it." },
+            { "id": 120, "category": "徵詢觀點", "scenario": "展現出對對方個人視角的重視，邀請對方分享如何看待某局勢。", "original": "What's your opinion?", "advanced": "I'd love to hear your view; how do you see the situation?" },
+            { "id": 121, "category": "前進動力", "scenario": "在對方感到挫敗時，提醒對方身為人類有這種感覺很正常，關鍵是繼續走。", "original": "Keep going.", "advanced": "You're human; everyone feels that way sometimes. What matters is that you keep going." },
+            { "id": 122, "category": "伴侶關係", "scenario": "強調對方不必獨自面對困境，你就在這裡並肩作戰。", "original": "I'll help you.", "advanced": "You don't have to face this alone; i'm right here with you." },
+            { "id": 123, "category": "開放感謝", "scenario": "再次感謝對方的敞開心扉，表達你對這份誠實交流的感激之情。", "original": "Thanks for talking.", "advanced": "Thank you for opening up to me; i truly appreciate your honesty." },
+            { "id": 124, "category": "勇氣定義", "scenario": "重新定義勇氣：不是準備好才做，而是即便害怕也仍舊選擇前行。", "original": "Be brave.", "advanced": "It's okay to be afraid; courage isn't about feeling ready, it's about moving forward anyway." },
+            { "id": 125, "category": "精神啟發", "scenario": "讚賞對方即便身處逆境仍堅持不懈的精神，稱之為「鼓舞人心」。", "original": "You are strong.", "advanced": "The way you keep going despite everything is inspiring; you might not realize it, but it's true." },
+            { "id": 126, "category": "小勝鼓勵", "scenario": "強調小小的進步與大成功一樣重要，肯定每一小步的價值。", "original": "Good job.", "advanced": "That's wonderful! Small steps count just as much as big ones." },
+            { "id": 127, "category": "情緒效力", "scenario": "告訴對方他的情緒反應是百分之百正當且可以理解的。", "original": "It's okay to feel that way.", "advanced": "Anyone in your position would feel the same; your reaction is completely valid." },
+            { "id": 128, "category": "圓滿祝福", "scenario": "慶祝事物終於步入正軌，並強調這是對方應得的回報。", "original": "I'm glad for you.", "advanced": "I'm so glad things are falling into place for you; you truly deserve this moment." },
+            { "id": 129, "category": "新起點鼓勵", "scenario": "支持對方開啟新的道路，並鼓勵其在信任自己的基礎上前行。", "original": "Try something new.", "advanced": "It sounds like you're ready for a fresh start; trust yourself as you move forward." },
+            { "id": 130, "category": "對話感激", "scenario": "表達對於能進行這種深度對話的感激，強調這份連結對你的重要性。", "original": "I like talking to you.", "advanced": "I'm really grateful we can talk like this; it means a lot to me." },
+            { "id": 131, "category": "耐心提醒", "scenario": "提醒對方不必一開始就掌握所有細節，一步一步來就好。", "original": "Take it slow.", "advanced": "It's okay not to have everything figured out right away; just take it one step at a time." },
+            { "id": 132, "category": "失誤價值", "scenario": "將錯誤描述為「失足」，並強調從中學習才是最重要的。", "original": "It's okay to make mistakes.", "advanced": "We all slip up sometimes; what matters is that you're learning from it." },
+            { "id": 133, "category": "突發讚賞", "scenario": "認同突發狀況帶來的衝擊，並讚美對方處理得比大多數人都好。", "original": "You did good with the surprise.", "advanced": "That must have thrown you off; you handled it better than most people would." },
+            { "id": 134, "category": "支持承諾", "scenario": "將決定權交還給對方，同時保證若需要商量隨時都在。", "original": "Do what you want.", "advanced": "Only you know what feels right, but I'm here if you want to talk it through." },
+            { "id": 135, "category": "真心祝賀", "scenario": "用最強烈的「發自內心的高興」來祝賀對方的成功。", "original": "Congratulations.", "advanced": "I'm honestly so happy for you; you deserve every bit of this." },
+            { "id": 136, "category": "耐心致謝", "scenario": "感謝對方的耐心包容與理解，通常用於麻煩到別人時。", "original": "Thanks for waiting.", "advanced": "Thanks for bearing with me; i really appreciate your understanding." },
+            { "id": 137, "category": "週末問候", "scenario": "詢問對方週末是否有什麼「美好的安排」，語氣顯得更貼心。", "original": "What are your plans?", "advanced": "Do you have anything nice planned for the weekend?" },
+            { "id": 138, "category": "情緒消化", "scenario": "在對方經歷重大訊息後，詢問他現在冷靜下來後的真實感受。", "original": "How are you now?", "advanced": "That must have been a lot to take in; how are you feeling about it now?" },
+            { "id": 139, "category": "最佳應對", "scenario": "承認情況不完美，但肯定大家已經在現狀下做了最好的發揮。", "original": "It wasn't perfect.", "advanced": "It wasn't ideal, but I think we made the best of the situation." },
+            { "id": 140, "category": "決心讚賞", "scenario": "表達對對方毅力的極大欽佩，並深信其有能力達成目標。", "original": "Good luck.", "advanced": "I really admire your determination; you're capable of achieving so much." },
+            { "id": 141, "category": "自我認知", "scenario": "提醒對方他比自己想像中還要出色，並指出自我要求的嚴苛。", "original": "You are good.", "advanced": "You're doing better than you think; sometimes we're too hard on ourselves to notice." },
+            { "id": 142, "category": "直覺鼓勵", "scenario": "引導對方聽從內心的直覺去嘗試，並觀察後續的結果。", "original": "Just do it.", "advanced": "If it feels right to you, maybe give it a try and see how it goes." },
+            { "id": 143, "category": "悔意導引", "scenario": "告訴對方過去的已無法改變，應該將視線放在未來的可能上。", "original": "Don't regret it.", "advanced": "What's done is done; focus on what you can do moving forward." },
+            { "id": 144, "category": "快樂爆發", "scenario": "當某件事讓你感到極度喜悅時，用這種生動的描述來表達。", "original": "I am so happy.", "advanced": "That genuinely made my day; i can't stop smiling about it." },
+            { "id": 145, "category": "共感解惑", "scenario": "承認情況確實混亂，並提議一起逐步釐清問題。", "original": "That's confusing.", "advanced": "I can see why that would be confusing; want to walk through it together?" },
+            { "id": 146, "category": "後盾承諾", "scenario": "保證對方在任何情況下都不是孤軍奮戰，有一群人在乎著他。", "original": "You are not alone.", "advanced": "Whatever happens, you're not alone; you've got people who care about you." },
+            { "id": 147, "category": "激動祝福", "scenario": "對超級棒的消息表達「絕對的精彩」以及極度的興奮。", "original": "That's good news.", "advanced": "That's absolutely wonderful! I'm truly thrilled for you." },
+            { "id": 148, "category": "興趣延續", "scenario": "表示目前為止都跟得上節奏，請對方繼續講接下來發生的事。", "original": "What happened next?", "advanced": "I'm with you so far; what happened next?" },
+            { "id": 149, "category": "開放選擇", "scenario": "描述自己目前的狀態是保持所有選項的開放性，不急著決定。", "original": "I don't know my plans.", "advanced": "I'm keeping my options open; i'm giving myself time to decide what feels right." },
+            { "id": 150, "category": "跨越困難", "scenario": "在困難時刻提醒對方的歷史成就，肯定其必能再次克服難關。", "original": "You can overcome this.", "advanced": "I know things feel heavy right now, but you've overcome so much already; you'll get through this too." },
+            { "id": 151, "category": "感激體貼", "scenario": "強調對方的行為「極其體貼」，並表達你內心深處的感激。", "original": "You are thoughtful.", "advanced": "That was incredibly thoughtful of you; i truly appreciate it." },
+            { "id": 152, "category": "冷靜讚賞", "scenario": "特別針對對方在壓力下仍能保持鎮定的處理方式表示欽佩。", "original": "You stayed calm.", "advanced": "I really admire the way you handled that; you stayed calm even in a stressful moment." },
+            { "id": 153, "category": "隨時告知", "scenario": "溫和地請對方在有空時隨時更新近況，不給予壓力。", "original": "Update me.", "advanced": "Whenever you have a moment, let me know how everything goes." },
+            { "id": 154, "category": "震驚共鳴", "scenario": "對震撼的消息表達難以置信，並認同那一定是個極其緊繃的時刻。", "original": "Oh wow.", "advanced": "I can't believe that happened; it must have been an intense moment." },
+            { "id": 155, "category": "信任鞏固", "scenario": "再次強調對方的信任對你意義重大，對這份坦誠表示感激。", "original": "Thanks for telling me.", "advanced": "I really appreciate you telling me that; it means a lot that you trust me." },
+            { "id": 156, "category": "抽離思考", "scenario": "建議對方先暫時抽離當下的細節，從大局觀點出發去釐清思路。", "original": "Think about the whole thing.", "advanced": "Maybe take a step back and look at the bigger picture; it can help things feel clearer." },
+            { "id": 157, "category": "自我肯定", "scenario": "提醒對方無法取悅所有人，最重要的是做對自己而言正確的事。", "original": "Don't care about others.", "advanced": "You can't please everyone, and that's completely okay; what matters is doing what feels right for you." },
+            { "id": 158, "category": "成長轉化", "scenario": "將改變帶來的不適定義為成長的契機，肯定對方的內在力量。", "original": "Change is good.", "advanced": "Change can be uncomfortable, but it often leads to growth; you're stronger than you realize." },
+            { "id": 159, "category": "潛力激發", "scenario": "提醒對方不要低估自己，因為他所具備的能力遠超乎自我想像。", "original": "Don't doubt yourself.", "advanced": "Don't underestimate yourself; you're capable of much more than you think." },
+            { "id": 160, "category": "舒適圈突破", "scenario": "慶祝對方跨出舒適圈，並肯定這是通往成長的唯一道路。", "original": "Good for you.", "advanced": "That's wonderful! You're stepping out of your comfort zone, and that's how growth happens." },
+            { "id": 161, "category": "對話終結", "scenario": "溫暖地結束對話，並告知對方你永遠都在這裡，隨時準備聆聽。", "original": "I am here if you need to talk.", "advanced": "If you ever want to talk again, you know where to find me; i'm always here to listen." }
+        ];
+
+        // --- App 邏輯 ---
+        let currentMode = 'regular'; // 'regular' or 'bookmark'
+        let currentIndex = 0;
+        let bookmarks = JSON.parse(localStorage.getItem('user_bookmarks_161') || '[]');
+
+        function getActiveList() {
+            if (currentMode === 'regular') return rawData;
+            return rawData.filter(item => bookmarks.includes(item.id));
+        }
+
+        function updateUI() {
+            const list = getActiveList();
+            const container = document.getElementById('app-container');
+            const favCountSpan = document.getElementById('fav-count');
+            
+            favCountSpan.textContent = `(${bookmarks.length})`;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="card" style="justify-content:center; align-items:center;"><p class="empty-msg">您的收藏清單目前是空的喔 ❤️</p></div>`;
+                return;
+            }
+
+            // 確保索引不溢出
+            if (currentIndex >= list.length) currentIndex = list.length - 1;
+            if (currentIndex < 0) currentIndex = 0;
+
+            const item = list[currentIndex];
+            const isFav = bookmarks.includes(item.id);
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="category-tag">${item.category}</span>
+                        <span class="id-label">#${item.id}</span>
+                    </div>
+                    
+                    <button class="bookmark-btn ${isFav ? 'active' : ''}" onclick="handleBookmark(${item.id})">
+                        <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+
+                    <div class="content-box">
+                        <div class="section-label">Scenario</div>
+                        <p class="scenario-text">${item.scenario}</p>
+                        
+                        <div class="section-label">Original</div>
+                        <p class="original-text">${item.original}</p>
+                        
+                        <div style="margin-top: 40px;">
+                            <div class="section-label" style="color:var(--primary)">Advanced Expression</div>
+                            <p class="advanced-text">${item.advanced}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right; color: #cbd5e1; font-size: 12px; font-weight: bold;">
+                        ${currentIndex + 1} / ${list.length}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            currentIndex = 0;
+            document.getElementById('tab-regular').classList.toggle('active', mode === 'regular');
+            document.getElementById('tab-bookmark').classList.toggle('active', mode === 'bookmark');
+            updateUI();
+        }
+
+        function goTo(pos) {
+            const list = getActiveList();
+            if (list.length === 0) return;
+
+            if (pos === 'first') currentIndex = 0;
+            else if (pos === 'last') currentIndex = list.length - 1;
+            else if (pos === 'next') currentIndex = (currentIndex + 1) % list.length;
+            else if (pos === 'prev') currentIndex = (currentIndex - 1 + list.length) % list.length;
+            
+            updateUI();
+        }
+
+        function handleBookmark(id) {
+            if (bookmarks.includes(id)) {
+                bookmarks = bookmarks.filter(b => b !== id);
+                // 如果在收藏模式下取消，且是最後一筆，索引往前跳
+                if (currentMode === 'bookmark' && currentIndex >= getActiveList().length - 1) {
+                    currentIndex = Math.max(0, currentIndex - 1);
+                }
+            } else {
+                bookmarks.push(id);
+            }
+            localStorage.setItem('user_bookmarks_161', JSON.stringify(bookmarks));
+            updateUI();
+        }
+
+        // 初始化
+        updateUI();
+    </script>
+</body>
+</html>
