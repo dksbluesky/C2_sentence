@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進階英文表達學習 - 161 句全收錄</title>
+    <title>進階英文表達學習 - 智慧記憶版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -25,6 +25,7 @@
             min-height: 100vh;
         }
 
+        /* 模式切換 */
         .tabs {
             display: flex;
             background: #e2e8f0;
@@ -53,6 +54,7 @@
             box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3);
         }
 
+        /* 卡片設計 */
         .card {
             background: var(--card-bg);
             width: 100%;
@@ -61,7 +63,7 @@
             padding: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.06);
             position: relative;
-            min-height: 460px;
+            min-height: 480px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -89,20 +91,14 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 32px;
+            font-size: 28px;
             color: #e2e8f0;
             transition: transform 0.2s;
         }
 
-        .bookmark-btn.active {
-            color: var(--primary);
-        }
+        .bookmark-btn.active { color: var(--primary); }
 
-        .id-label {
-            color: #cbd5e1;
-            font-size: 20px;
-            font-weight: 800;
-        }
+        .id-label { color: #cbd5e1; font-size: 20px; font-weight: 800; }
 
         .section-label {
             color: #94a3b8;
@@ -113,9 +109,7 @@
             text-transform: uppercase;
         }
 
-        .content-box {
-            flex-grow: 1;
-        }
+        .content-box { flex-grow: 1; }
 
         .scenario-text {
             font-size: 17px;
@@ -127,11 +121,7 @@
             margin-bottom: 25px;
         }
 
-        .original-text {
-            font-size: 20px;
-            color: #64748b;
-            margin-bottom: 25px;
-        }
+        .original-text { font-size: 20px; color: #64748b; margin-bottom: 25px; }
 
         .advanced-text {
             font-size: 26px;
@@ -145,16 +135,40 @@
             color: #cbd5e1;
             font-size: 13px;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
+        /* 智慧滑桿 */
+        .slider-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-light);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 導覽按鈕 */
         .nav-grid {
             width: 100%;
             max-width: 600px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-top: 25px;
         }
 
         .nav-btn {
@@ -172,22 +186,25 @@
         }
 
         .nav-btn:hover { background: #fff1f2; color: var(--primary); }
-        .nav-btn:active { transform: translateY(2px); }
-
-        @media (max-width: 500px) {
-            .card { padding: 20px; min-height: 500px; }
-            .advanced-text { font-size: 22px; }
-        }
     </style>
 </head>
 <body>
 
     <div class="tabs">
-        <button class="tab active" id="tab-regular" onclick="switchMode('regular')">全部項目</button>
+        <button class="tab" id="tab-regular" onclick="switchMode('regular')">全部項目</button>
         <button class="tab" id="tab-bookmark" onclick="switchMode('bookmark')">我的收藏 <span id="fav-count"></span></button>
     </div>
 
     <div id="app-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+
+    <div class="slider-container" id="slider-wrap">
+        <input type="range" id="page-slider" min="0" step="1" oninput="handleSlider(this.value)">
+        <div class="slider-labels">
+            <span>START</span>
+            <span id="slider-current-pos">1</span>
+            <span>END</span>
+        </div>
+    </div>
 
     <div class="nav-grid">
         <button class="nav-btn" onclick="goTo('first')"><i class="fas fa-angles-left"></i></button>
@@ -197,6 +214,7 @@
     </div>
 
     <script>
+        // 資料載入
         const rawData = [
             {"id": 1, "category": "日常感受", "scenario": "當你想表達一整天非常疲憊，且消耗了比預期更多的精力時。", "original": "I'm tired.", "advanced": "It's been one of those days where everything required just a little more energy than I expected."},
             {"id": 2, "category": "觀點表達", "scenario": "在商務或正式場合，有禮貌且成熟地提出對某個想法的看法。", "original": "I think it's good.", "advanced": "From my point of view, it actually seems like a well-thought-out idea."},
@@ -361,32 +379,68 @@
             {"id": 161, "category": "對話終結", "scenario": "溫暖地結束對話，並告知對方你永遠都在這裡，隨時準備聆聽。", "original": "I am here if you need to talk.", "advanced": "If you ever want to talk again, you know where to find me; i'm always here to listen."}
         ];
 
+        // 狀態管理
         let currentMode = 'regular';
         let currentIndex = 0;
-        let bookmarks = JSON.parse(localStorage.getItem('user_favs_161') || '[]');
+        let bookmarks = JSON.parse(localStorage.getItem('user_favs_final') || '[]');
 
         function getActiveList() {
             return currentMode === 'regular' ? rawData : rawData.filter(item => bookmarks.includes(item.id));
         }
 
-        function updateUI() {
+        // 初始化：讀取上次離開時的狀態
+        function initApp() {
+            const lastMode = localStorage.getItem('last_app_mode');
+            const lastItemId = localStorage.getItem('last_item_id');
+
+            if (lastMode) currentMode = lastMode;
+            
+            const list = getActiveList();
+            
+            // 嘗試找到上次看到的那個 ID 在目前清單中的索引
+            if (lastItemId) {
+                const targetId = parseInt(lastItemId);
+                const foundIndex = list.findIndex(item => item.id === targetId);
+                if (foundIndex !== -1) currentIndex = foundIndex;
+            }
+
+            renderUI();
+        }
+
+        function renderUI() {
             const list = getActiveList();
             const container = document.getElementById('app-container');
+            const slider = document.getElementById('page-slider');
+            const posLabel = document.getElementById('slider-current-pos');
+            
+            // 更新 Tab 樣式與收藏計數
+            document.getElementById('tab-regular').className = `tab ${currentMode === 'regular' ? 'active' : ''}`;
+            document.getElementById('tab-bookmark').className = `tab ${currentMode === 'bookmark' ? 'active' : ''}`;
             document.getElementById('fav-count').textContent = `(${bookmarks.length})`;
 
+            // 1. 動態調整滑桿範圍
+            if (list.length > 1) {
+                slider.disabled = false;
+                slider.max = list.length - 1;
+                slider.value = currentIndex;
+                posLabel.textContent = currentIndex + 1;
+            } else {
+                slider.disabled = true;
+                slider.value = 0;
+                posLabel.textContent = list.length === 0 ? "0" : "1";
+            }
+
             if (list.length === 0) {
-                container.innerHTML = `
-                    <div class="card" style="justify-content:center; align-items:center; text-align:center;">
-                        <i class="far fa-heart" style="font-size: 50px; color: #e2e8f0; margin-bottom: 20px;"></i>
-                        <p style="color:#94a3b8; font-size: 18px;">目前收藏清單是空的喔 ❤️<br><small>點擊愛心即可收藏常用句子</small></p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="card" style="justify-content:center; align-items:center;"><p style="color:#94a3b8">目前收藏清單是空的喔 ❤️</p></div>`;
                 return;
             }
 
-            if (currentIndex >= list.length) currentIndex = list.length - 1;
             const item = list[currentIndex];
             const isFav = bookmarks.includes(item.id);
+
+            // 2. 記憶功能：儲存當前的模式與 ID
+            localStorage.setItem('last_app_mode', currentMode);
+            localStorage.setItem('last_item_id', item.id);
 
             container.innerHTML = `
                 <div class="card">
@@ -397,33 +451,33 @@
                         </button>
                         <span class="id-label">#${item.id}</span>
                     </div>
-                    
                     <div class="content-box">
                         <div class="section-label">情境 Scenario</div>
                         <p class="scenario-text">${item.scenario}</p>
-                        
                         <div class="section-label">原始表達 Original</div>
                         <p class="original-text">${item.original}</p>
-                        
                         <div class="section-label" style="color:var(--primary)">進階用法 Advanced</div>
                         <p class="advanced-text">${item.advanced}</p>
                     </div>
-                    
-                    <div class="page-counter">
-                        ${currentIndex + 1} / ${list.length}
-                    </div>
+                    <div class="page-counter">${currentIndex + 1} / ${list.length}</div>
                 </div>
             `;
         }
 
-        function switchMode(mode) {
-            currentMode = mode;
-            currentIndex = 0;
-            document.getElementById('tab-regular').classList.toggle('active', mode === 'regular');
-            document.getElementById('tab-bookmark').classList.toggle('active', mode === 'bookmark');
-            updateUI();
+        // 滑桿操作
+        function handleSlider(val) {
+            currentIndex = parseInt(val);
+            renderUI();
         }
 
+        // 切換模式
+        function switchMode(mode) {
+            currentMode = mode;
+            currentIndex = 0; // 切換模式時通常回到第一頁，或可改為保持當前 ID
+            renderUI();
+        }
+
+        // 導覽按鈕
         function goTo(pos) {
             const list = getActiveList();
             if (list.length === 0) return;
@@ -431,23 +485,26 @@
             else if (pos === 'last') currentIndex = list.length - 1;
             else if (pos === 'next') currentIndex = (currentIndex + 1) % list.length;
             else if (pos === 'prev') currentIndex = (currentIndex - 1 + list.length) % list.length;
-            updateUI();
+            renderUI();
         }
 
+        // 收藏操作
         function handleBookmark(id) {
             if (bookmarks.includes(id)) {
                 bookmarks = bookmarks.filter(b => b !== id);
-                if (currentMode === 'bookmark' && currentIndex >= getActiveList().length - 1) {
+                // 若在收藏頁面取消，需檢查索引
+                if (currentMode === 'bookmark' && currentIndex >= getActiveList().length) {
                     currentIndex = Math.max(0, currentIndex - 1);
                 }
             } else {
                 bookmarks.push(id);
             }
-            localStorage.setItem('user_favs_161', JSON.stringify(bookmarks));
-            updateUI();
+            localStorage.setItem('user_favs_final', JSON.stringify(bookmarks));
+            renderUI();
         }
 
-        updateUI();
+        // 啟動 App
+        initApp();
     </script>
 </body>
 </html>
