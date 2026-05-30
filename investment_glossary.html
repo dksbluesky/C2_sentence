@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Investment Glossary</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #ffffff; color: #18181b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.app { max-width: 600px; margin: 0 auto; }
+.header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.97); backdrop-filter: blur(8px); border-bottom: 1px solid #e4e4e7; padding: 14px 16px 10px; }
+.title-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+.count { font-size: 13px; color: #71717a; }
+.search { width: 100%; background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 10px; padding: 9px 12px; font-size: 14px; color: #18181b; outline: none; transition: border-color 0.15s; margin-bottom: 10px; }
+.search::placeholder { color: #a1a1aa; }
+.search:focus { border-color: #a1a1aa; }
+.pills { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.pills::-webkit-scrollbar { display: none; }
+.pill { flex-shrink: 0; font-size: 12px; padding: 5px 12px; border-radius: 999px; font-weight: 500; border: none; cursor: pointer; transition: background 0.15s, color 0.15s; background: #f4f4f5; color: #71717a; }
+.pill.active-all { background: #3f3f46; color: #fff; }
+.pill.active-inst { background: #1d4ed8; color: #fff; }
+.pill.active-tech { background: #7c3aed; color: #fff; }
+.pill.active-price { background: #047857; color: #fff; }
+.pill.active-mkt { background: #b45309; color: #fff; }
+.pill.active-strat { background: #be185d; color: #fff; }
+.pill.active-etf { background: #0f766e; color: #fff; }
+.cards { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.card-wrap { perspective: 1000px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card-inner { position: relative; transform-style: preserve-3d; transition: transform 0.42s cubic-bezier(0.4,0,0.2,1); min-height: 148px; }
+.card-inner.flipped { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; border-radius: 12px; padding: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+.front { background: #f4f4f5; border: 1px solid #e4e4e7; }
+.back { background: #fafafa; border: 1px solid #d4d4d8; transform: rotateY(180deg); }
+.front-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.term-en { font-size: 15px; font-weight: 600; color: #18181b; line-height: 1.3; }
+.term-zh { font-size: 13px; color: #71717a; margin-top: 3px; }
+.badge { flex-shrink: 0; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; margin-top: 2px; white-space: nowrap; }
+.badge-inst { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-tech { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+.badge-price { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.badge-mkt { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.badge-strat { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+.badge-etf { background: #ccfbf1; color: #115e59; border: 1px solid #99f6e4; }
+.hint { font-size: 11px; color: #a1a1aa; text-align: right; margin-top: 10px; }
+.back-header { font-size: 12px; font-weight: 600; color: #52525b; margin-bottom: 8px; }
+.back-header span { color: #a1a1aa; font-weight: 400; }
+.definition { font-size: 13px; color: #27272a; line-height: 1.6; flex: 1; }
+.empty { text-align: center; color: #a1a1aa; padding: 60px 0; font-size: 14px; }
+.footer { text-align: center; font-size: 11px; color: #d4d4d8; padding: 24px 16px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const TERMS = [
+  { en: "Share Washing", zh: "洗籌碼", def: "Institutional tactic: sell at ATH to crash price, shake out retail investors at lows, then quietly reaccumulate cheap shares before pushing price higher. Classic manipulation pattern.", cat: "inst" },
+  { en: "Chip Concentration", zh: "籌碼集中", def: "Chips (shares) concentrating into fewer, stronger hands. Measured by 5-day and 20-day concentration %. Rising concentration = bullish signal that wash is complete.", cat: "inst" },
+  { en: "OBI (Order Book Imbalance)", zh: "內外盤比", def: "外盤% = buyers hitting the ask aggressively (bullish). 內盤% = sellers hitting the bid aggressively (bearish). External 70%+ = strong buying pressure.", cat: "inst" },
+  { en: "家數差", zh: "家數差", def: "Difference between number of buyers and sellers. Negative = fewer retail buyers than sellers (institutions accumulating quietly). Positive = retail chasing (potential distribution signal).", cat: "inst" },
+  { en: "買賣超", zh: "買賣超", def: "Net buy/sell volume by major players (主力). Large positive = institutions net buying. Flipping negative = institutions exiting.", cat: "inst" },
+  { en: "5日集中 / 20日集中", zh: "集中度", def: "5-day and 20-day chip concentration percentage. Rising = chips moving into strong hands. Dropping sharply = chips dispersing (distribution warning).", cat: "inst" },
+  { en: "三大法人", zh: "三大法人", def: "Three major institutional players in Taiwan: 外資 (foreign funds), 投信 (domestic investment trusts), 自營商 (proprietary traders). Tracking their combined flow is key.", cat: "inst" },
+  { en: "外資", zh: "外資", def: "Foreign institutional investors. The most powerful force in Taiwan markets. When 外資 buys consistently 3+ days = strong signal. When they sell = caution.", cat: "inst" },
+  { en: "主力熱門賣超", zh: "主力賣超", def: "Tag on 籌碼K線 indicating major players are net sellers. When this appears on a stock you hold, pay attention — institutions may be exiting.", cat: "inst" },
+  { en: "大戶加碼", zh: "大戶加碼", def: "Large investors (whales) adding to their position. Bullish signal when combined with rising chip concentration.", cat: "inst" },
+  { en: "Distribution", zh: "出貨", def: "Institutions selling their accumulated shares to retail investors at high prices. Signs: 家數差 turns positive, OBI high but price stalls or falls, volume spikes.", cat: "inst" },
+  { en: "融資戶", zh: "融資戶", def: "Margin account holders — investors who borrowed money to buy stocks. Vulnerable to forced selling during downturns. Their panic selling creates buying opportunities for cash investors.", cat: "inst" },
+  { en: "The Intraday Trap-Setting", zh: "盤中誘多／誘空（掛單陷阱）", def: "Institutional tactic of placing visible large limit orders to attract retail traders in a specific direction, then cancelling or reversing once retail is committed. e.g. a large bid order near support lures retail buyers in — then the bid disappears as price breaks through support. Related to 幌騙 (spoofing) but often more subtle and harder to detect in real time.", cat: "inst" },
+  { en: "幌騙 (Spoofing)", zh: "幌騙", def: "Placing large fake orders in the order book to create false impression of supply/demand, then cancelling before execution. Large buy queue + falling price = possible spoofing.", cat: "inst" },
+  { en: "EMA5 / EMA20", zh: "均線", def: "Exponential Moving Averages. EMA5 (yellow) = short-term trend. EMA20 (blue) = medium-term trend. Price above both = bullish. Death cross (EMA5 below EMA20) = bearish.", cat: "tech" },
+  { en: "WTXP (台指期夜盤)", zh: "台指期盤後", def: "Taiwan futures after-hours session (15:00–05:00). Tracks US market overnight. Used to predict next day's Taiwan market open direction. More reliable than intraday TAIEX when diverging.", cat: "tech" },
+  { en: "VIX", zh: "恐慌指數", def: "Volatility Index. Market's fear gauge. VIX below 20 = calm. VIX 20–30 = elevated uncertainty. VIX above 30 = high fear. Spike of 10%+ in one day = institutions buying protection.", cat: "tech" },
+  { en: "SOX (費城半導體指數)", zh: "半導體指數", def: "Philadelphia Semiconductor Index. Leading indicator for Taiwan tech stocks. When SOX drops sharply, TSMC ADR and Taiwan chip stocks follow next day.", cat: "tech" },
+  { en: "Beta", zh: "Beta係數", def: "Measures stock volatility vs market. Beta 1.0 = moves with market. Beta 1.77 (e.g. 3711) = moves 77% more than market. Low beta = less volatile, better for conservative investors.", cat: "tech" },
+  { en: "Resistance / Support", zh: "壓力／支撐", def: "Resistance = price level where selling pressure appears. Support = level where buying appears. e.g. 'NT$2,000 is key resistance for 2330.'", cat: "tech" },
+  { en: "Overbought / Oversold", zh: "超買／超賣", def: "Overbought = price rose too fast, due for pullback. Oversold = price fell too fast, due for bounce. Measured by RSI and other indicators.", cat: "tech" },
+  { en: "ATH (All-Time High)", zh: "歷史高點", def: "The highest price a stock or index has ever reached. e.g. '3711 hit a new ATH at NT$464.'", cat: "tech" },
+  { en: "量縮", zh: "量縮", def: "Volume contraction. Lower volume on an up day = weak conviction rally. Higher volume on up day = strong conviction.", cat: "tech" },
+  { en: "Soar / Surge", zh: "飆漲／暴漲", def: "Price rises sharply and dramatically. e.g. 'TSMC soared 5% on earnings beat.' Stronger than 'rise' or 'climb'.", cat: "price" },
+  { en: "Climb / Rally", zh: "攀升／反彈", def: "Price rises steadily or recovers from a decline. 'Rally' often implies a rebound after a drop. e.g. 'Markets rallied on ceasefire hopes.'", cat: "price" },
+  { en: "Tick Up / Edge Up", zh: "小幅上漲", def: "Small, gradual price increase. e.g. 'Shares ticked up 0.3% in early trade.' Less dramatic than surge.", cat: "price" },
+  { en: "Plummet / Tumble", zh: "暴跌／重挫", def: "Sharp, dramatic price fall. e.g. 'SOX plummeted 4.79% on AI compression fears.' Stronger than 'drop' or 'fall'.", cat: "price" },
+  { en: "Slide / Drift Lower", zh: "緩跌／走低", def: "Gradual, steady price decline. e.g. '2330 slid toward support as volume dried up.' Less dramatic than plummet.", cat: "price" },
+  { en: "Shed / Shed Points", zh: "下跌（點數）", def: "Lose a specific amount. e.g. 'The Dow shed 238 points.' Common in index reporting.", cat: "price" },
+  { en: "Pare Gains / Pare Losses", zh: "收窄漲幅／收窄跌幅", def: "Reduce earlier gains or losses. e.g. 'Stocks pared gains in the afternoon session.' Means the move partially reversed.", cat: "price" },
+  { en: "Extend Gains / Extend Losses", zh: "擴大漲幅／擴大跌幅", def: "Gains or losses increase further. e.g. 'Taiwan futures extended gains to +777 points.'", cat: "price" },
+  { en: "Flat / Unchanged", zh: "持平／不變", def: "Little to no price movement. e.g. '2317 closed flat at NT$221.' Also 'little changed' or 'muted.'", cat: "price" },
+  { en: "Rebound / Bounce Back", zh: "反彈", def: "Price recovers after a decline. e.g. 'Markets rebounded after overselling.' Short-term recovery, not necessarily a new trend.", cat: "price" },
+  { en: "Retreat / Pull Back", zh: "回落／回檔", def: "Price falls back after a rise. e.g. '2330 retreated from its intraday high.' Implies temporary, healthy correction.", cat: "price" },
+  { en: "Consolidate", zh: "整理", def: "Price moves sideways in a range after a big move. e.g. '006208 consolidated near NT$195 ahead of earnings.' Normal before next directional move.", cat: "price" },
+  { en: "Gap Up / Gap Down", zh: "跳空上漲／跳空下跌", def: "Price opens significantly higher or lower than previous close, leaving a 'gap' on the chart. Common after major overnight news.", cat: "price" },
+  { en: "Catch-up Rally", zh: "補漲", def: "A surge in price that occurs when a stock or market missed reacting to news (e.g. due to a holiday). It catches up to where it should have been. Not driven by new conviction — just filling the gap.", cat: "mkt" },
+  { en: "Limit Up", zh: "漲停", def: "Daily price limit up (Taiwan market: +10%). When a stock hits 漲停, no more sellers — only buyers queue. Strong bullish signal when volume confirms.", cat: "mkt" },
+  { en: "Buy the Rumour, Sell the News", zh: "買預期賣事實", def: "Price rises in anticipation of good news, then drops when news is confirmed as traders lock in profits. Common pattern around earnings announcements.", cat: "mkt" },
+  { en: "Beat / Miss Estimates", zh: "優於／遜於預期", def: "Earnings beat = results better than analyst forecasts. Miss = worse. e.g. 'TSMC beat estimates with 58% profit surge.'", cat: "mkt" },
+  { en: "Guidance", zh: "展望／指引", def: "Company's own forecast for future performance. e.g. 'TSMC raised full-year guidance to 30%+ growth.' Often more market-moving than actual results.", cat: "mkt" },
+  { en: "Catalyst", zh: "催化劑", def: "Event or news that triggers a significant price move. e.g. 'TSMC earnings were the catalyst for today's rally.'", cat: "mkt" },
+  { en: "Headwind / Tailwind", zh: "逆風／順風", def: "Headwind = factor working against growth (e.g. tariffs, war). Tailwind = factor supporting growth (e.g. AI demand, rate cuts).", cat: "mkt" },
+  { en: "Risk-off / Risk-on", zh: "避險情緒／風險偏好", def: "Risk-off = investors sell stocks, buy safe assets (gold, bonds). Risk-on = investors buy stocks, sell safe assets. Driven by fear or confidence.", cat: "mkt" },
+  { en: "Capitulation", zh: "投降式賣壓", def: "Final wave of panic selling by last remaining holders. Often marks the bottom of a crash. e.g. 'Volume spike on down day may signal capitulation.'", cat: "mkt" },
+  { en: "Dead Cat Bounce", zh: "死貓彈", def: "Brief price recovery after a large drop, before continuing lower. Not a true reversal. e.g. '3711's bounce to NT$345 looked like a dead cat bounce.'", cat: "mkt" },
+  { en: "Correction", zh: "回檔修正", def: "A decline of 10% or more from recent highs. Normal and healthy in bull markets. Distinguished from a 'crash' which is more severe.", cat: "mkt" },
+  { en: "Bull Market / Bear Market", zh: "多頭市場／空頭市場", def: "Bull = rising market, optimistic sentiment. Bear = falling market, pessimistic sentiment. Generally defined as 20%+ move from recent high/low.", cat: "mkt" },
+  { en: "Sentiment", zh: "市場情緒", def: "Overall mood of investors — fearful or greedy. e.g. 'Sentiment turned cautious after Trump's speech.' Drives short-term price action.", cat: "mkt" },
+  { en: "DCA (定期定額)", zh: "定期定額", def: "Dollar Cost Averaging. Buying a fixed amount at regular intervals regardless of price. Smooths out entry price over time. Most effective when held long term.", cat: "strat" },
+  { en: "Value Averaging", zh: "價值平均法", def: "More aggressive version of DCA. Buy fixed amount regularly, but buy MORE when price drops below a target level. Requires confidence in the underlying asset.", cat: "strat" },
+  { en: "存股哥 approach", zh: "存股", def: "Long-term dividend accumulation strategy. DCA into high-yield ETFs, reinvest dividends, hold for 5–10 years. Goal: passive income exceeding time deposit returns.", cat: "strat" },
+  { en: "Hard Stop", zh: "停損點", def: "Predetermined price at which you will sell to limit losses. Non-negotiable. Must be set before entry, not during the pain of a downturn.", cat: "strat" },
+  { en: "Micro-Dip Strategy", zh: "微回檔策略", def: "Buying small intraday or intraweek pullbacks within an established uptrend, rather than waiting for a full correction. Allows gradual accumulation without missing the larger move. Most effective when trend is confirmed and 籌碼 are concentrated. Risk: mistaking a trend reversal for a micro-dip.", cat: "strat" },
+  { en: "Regret Minimization", zh: "後悔最小化", def: "Decision framework where you choose the action you will regret the least, regardless of outcome. e.g. selling half a position locks in some gain (no full regret if it drops) while keeping the other half (no full regret if it surges). Useful when conviction is split and outcome is binary.", cat: "strat" },
+  { en: "Price Anchoring", zh: "錨定效應", def: "Psychological bias where investors fixate on a specific price — purchase cost, ATH, or a round number — and make decisions relative to that anchor rather than current fundamentals. e.g. holding a losing position because 'it was at NT$400 before, it'll get back there.' One of the most common and costly cognitive traps in investing.", cat: "strat" },
+  { en: "The Pullback Paradox", zh: "回檔悖論", def: "The contradiction where a pullback looks most attractive to buy (lower price, better value) but feels most dangerous (momentum loss, possible reversal). The best entries often feel the worst emotionally. Resolving this paradox requires pre-defined criteria — not gut feel — for what constitutes a healthy pullback vs a trend break.", cat: "strat" },
+  { en: "Margin Call", zh: "追繳保證金", def: "When a leveraged (融資) investor's equity falls below maintenance level, broker demands additional cash or forces a sale. Creates panic selling cascades.", cat: "strat" },
+  { en: "除息", zh: "除息", def: "Ex-dividend date. Price drops mechanically by the dividend amount on this date. Buying before 除息 = you collect the dividend. Buying after = you get a lower price.", cat: "etf" },
+  { en: "填息", zh: "填息", def: "Price recovery back to pre-dividend level after 除息. 填息天數 = days taken to fill the gap. Faster 填息 = stronger market demand.", cat: "etf" },
+  { en: "Expense Ratio", zh: "費用率", def: "Annual fee silently deducted from ETF's NAV. 006208 = 0.16%. 00878 = 0.3%. Compounding effect over 6 years is significant — lower is always better.", cat: "etf" },
+  { en: "NAV (Net Asset Value)", zh: "淨資產價值", def: "The true underlying value of one ETF share. NAV = (Total ETF assets − Liabilities) ÷ Total shares outstanding. When stocks inside the ETF rise, NAV rises. Market price should closely track NAV.", cat: "etf" },
+  { en: "Flywheel Effect", zh: "飛輪效應", def: "Self-reinforcing growth cycle. For ETFs: more DCA inflows → manager buys more stocks → stocks rise → NAV rises → attracts more investors → even more inflows. Works powerfully in both directions — when it reverses, the unwinding can be violent.", cat: "etf" },
+  { en: "Odd Lot", zh: "零股", def: "Buying fewer than 1,000 shares (1張). Taiwan allows odd lot trading for expensive stocks like TSMC. Pricing may slightly differ from board lot during certain sessions.", cat: "etf" },
+  { en: "FIFO", zh: "先進先出", def: "First In First Out. Taiwan broker default: when selling, oldest shares sold first. Important for tax and P&L calculation when averaging down.", cat: "etf" },
+];
+
+const CAT_LABELS = {
+  all: "All",
+  inst: "Institutional Flow",
+  tech: "Technical Analysis",
+  price: "Price Action",
+  mkt: "Market Concepts",
+  strat: "Strategy & Psychology",
+  etf: "ETF & Dividends",
+};
+
+const CAT_ACTIVE_CLASS = {
+  all: "active-all",
+  inst: "active-inst",
+  tech: "active-tech",
+  price: "active-price",
+  mkt: "active-mkt",
+  strat: "active-strat",
+  etf: "active-etf",
+};
+
+const BADGE_CLASS = {
+  inst: "badge-inst",
+  tech: "badge-tech",
+  price: "badge-price",
+  mkt: "badge-mkt",
+  strat: "badge-strat",
+  etf: "badge-etf",
+};
+
+function Card({ term }) {
+  const [flipped, setFlipped] = React.useState(false);
+  return (
+    <div className="card-wrap" onClick={() => setFlipped(f => !f)}>
+      <div className={`card-inner${flipped ? " flipped" : ""}`}>
+        <div className="face front">
+          <div className="front-top">
+            <div>
+              <div className="term-en">{term.en}</div>
+              <div className="term-zh">{term.zh}</div>
+            </div>
+            <span className={`badge ${BADGE_CLASS[term.cat]}`}>{CAT_LABELS[term.cat]}</span>
+          </div>
+          <div className="hint">tap to see definition →</div>
+        </div>
+        <div className="face back">
+          <div className="back-header">{term.en} <span>/ {term.zh}</span></div>
+          <div className="definition">{term.def}</div>
+          <div className="hint">tap to flip back ←</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [search, setSearch] = React.useState("");
+  const [cat, setCat] = React.useState("all");
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return TERMS.filter(t => {
+      const mc = cat === "all" || t.cat === cat;
+      const ms = !q || t.en.toLowerCase().includes(q) || t.zh.includes(q) || t.def.toLowerCase().includes(q);
+      return mc && ms;
+    });
+  }, [search, cat]);
+
+  return (
+    <div className="app">
+      <div className="header">
+        <div className="title-row">
+          <span className="title">Investment Glossary</span>
+          <span className="count">{filtered.length} / {TERMS.length}</span>
+        </div>
+        <input
+          className="search"
+          type="text"
+          placeholder="Search English, 中文, or definition…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <div className="pills">
+          {Object.entries(CAT_LABELS).map(([key, label]) => (
+            <button
+              key={key}
+              className={`pill${cat === key ? ` active ${CAT_ACTIVE_CLASS[key]}` : ""}`}
+              onClick={() => setCat(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="cards">
+        {filtered.length === 0
+          ? <div className="empty">No terms match.</div>
+          : filtered.map(t => <Card key={t.en} term={t} />)
+        }
+      </div>
+      <div className="footer">Personal reference · Not investment advice · April–May 2026</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
