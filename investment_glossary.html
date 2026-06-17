@@ -193,7 +193,7 @@ function restoreLastTerm() {
   const card = [...document.querySelectorAll('.card')].find(c => c.dataset.term === last);
   if (!card) return;
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  card.classList.add('last-read-flash');
+  card.classList.add('flipped', 'last-read-flash');
   card.addEventListener('animationend', () => card.classList.remove('last-read-flash'), { once: true });
 }
 
