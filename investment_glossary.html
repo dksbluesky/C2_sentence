@@ -39,6 +39,14 @@
   .no-results { text-align: center; padding: 60px 20px; color: #a0aec0; grid-column: 1/-1; }
   .no-results span { font-size: 40px; display: block; margin-bottom: 12px; }
 
+  /* last-read highlight: pulse ring on page load */
+  @keyframes lastReadPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(46,64,87,0.6), 0 1px 4px rgba(0,0,0,0.08); }
+    50%  { box-shadow: 0 0 0 6px rgba(46,64,87,0.25), 0 4px 12px rgba(0,0,0,0.12); }
+    100% { box-shadow: 0 0 0 0 rgba(46,64,87,0), 0 1px 4px rgba(0,0,0,0.08); }
+  }
+  .card.last-read-flash { animation: lastReadPulse 1.8s ease-out forwards; }
+
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; padding: 12px; gap: 10px; }
     .card { height: 130px; }
@@ -139,6 +147,14 @@ const cats = [...new Set(terms.map(t => t.cat))].sort();
 const sel = document.getElementById('catFilter');
 cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
 
+// Called when a card is tapped — toggles flip and saves to localStorage when opened
+function flipCard(el) {
+  el.classList.toggle('flipped');
+  if (el.classList.contains('flipped')) {
+    localStorage.setItem('lastReadTerm', el.dataset.term);
+  }
+}
+
 function render() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
@@ -153,7 +169,7 @@ function render() {
     return;
   }
   grid.innerHTML = filtered.map((t, i) => `
-    <div class="card" onclick="this.classList.toggle('flipped')">
+    <div class="card" data-term="${t.en.replace(/"/g, '&quot;')}" onclick="flipCard(this)">
       <div class="card-inner">
         <div class="card-front">
           <div class="term-en">${t.en}</div>
@@ -170,7 +186,19 @@ function render() {
   `).join('');
 }
 
+// On page load: scroll to and highlight the last card the user flipped open
+function restoreLastTerm() {
+  const last = localStorage.getItem('lastReadTerm');
+  if (!last) return;
+  const card = [...document.querySelectorAll('.card')].find(c => c.dataset.term === last);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('last-read-flash');
+  card.addEventListener('animationend', () => card.classList.remove('last-read-flash'), { once: true });
+}
+
 render();
+requestAnimationFrame(restoreLastTerm);
 </script>
 </body>
 </html>
