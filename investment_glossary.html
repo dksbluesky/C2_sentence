@@ -52,6 +52,29 @@
     .card { height: 130px; }
     .controls { top: 53px; }
   }
+
+  .import-btn { padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; color: #2E4057; font-weight: 600; }
+  .import-btn:hover { background: #EBF4FF; }
+
+  .import-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+  .import-panel { background: white; border-radius: 14px; max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px; }
+  .import-panel h2 { font-size: 17px; color: #2E4057; margin-bottom: 4px; }
+  .import-summary { font-size: 12px; color: #718096; margin-bottom: 14px; }
+  .import-list { display: flex; flex-direction: column; gap: 10px; }
+  .import-entry { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .import-checkbox { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 2px; }
+  .import-status-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; white-space: nowrap; }
+  .import-status-tag.new { background: #C6F6D5; color: #276749; }
+  .import-status-tag.update { background: #FEEBC8; color: #975A16; }
+  .import-fields { flex: 1; min-width: 0; }
+  .import-term { font-size: 13px; font-weight: 700; color: #2E4057; }
+  .import-zh { font-size: 12px; color: #718096; font-weight: 500; margin-left: 6px; }
+  .import-diff-old { font-size: 11px; color: #c53030; text-decoration: line-through; margin-top: 4px; }
+  .import-def { font-size: 12px; color: #4a5568; margin-top: 4px; line-height: 1.5; }
+  .import-cat, .import-newcat { margin-top: 8px; padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 100%; }
+  .import-actions { display: flex; gap: 10px; margin-top: 16px; position: sticky; bottom: 0; background: white; padding-top: 8px; }
+  .import-confirm { flex: 1; background: #2E4057; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  .import-cancel { background: #e2e8f0; color: #2d3748; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -66,11 +89,19 @@
   <select class="filter-select" id="catFilter" onchange="render()">
     <option value="">All Categories</option>
   </select>
+  <button class="import-btn" onclick="document.getElementById('importFile').click()">📥 Import .docx</button>
+  <input type="file" id="importFile" accept=".docx" style="display:none" onchange="handleImportFile(event)">
+  <button class="import-btn" onclick="exportCustomTerms()">⬇️ Export</button>
   <span class="count-badge" id="countBadge"></span>
 </div>
 
 <div class="grid" id="grid"></div>
 
+<div class="import-overlay" id="importOverlay" style="display:none">
+  <div class="import-panel" id="importPanel"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const terms = [
   { en: "Catch-up Rally", zh: "補漲", def: "A surge in price that occurs when a stock or market missed reacting to news (e.g. due to a holiday). It catches up to where it should have been. Not driven by new conviction — just filling the gap.", cat: "Price Action" },
@@ -141,11 +172,34 @@ const terms = [
   { en: "Margin Trading", zh: "融資", def: "Buying stocks with borrowed money from a broker. Amplifies both gains and losses. When price drops below the maintenance ratio (融資維持率), forced liquidation occurs — creating cascade selling (多殺多).", cat: "Market Structure" },
   { en: "Short Selling on Margin", zh: "融券", def: "Borrowing shares from a broker to sell in the market, expecting to buy them back cheaper later. Rising 融券 = increasing short interest = bearish sentiment, but also potential for short squeeze.", cat: "Market Structure" },
   { en: "Short-to-Margin Ratio", zh: "券資比", def: "Ratio of 融券 (short positions) to 融資 (margin long positions). Rising 券資比 = short sellers gaining relative to leveraged longs = bearish signal. Taiwan-specific term used as a daily 籌碼 signal.", cat: "籌碼" },
+  { en: "Confluence of Support", zh: "多重支撐匯聚", def: "A price zone where multiple independent support factors align simultaneously — e.g. a key moving average, a prior resistance-turned-support level, a Fibonacci retracement, and high-volume accumulation zone all converging at the same price. The more factors that align, the stronger and more reliable the support. Traders treat confluence zones as high-probability entry points.", cat: "Technical" },
+  { en: "Fair Value Gap (FVG)", zh: "公允價值缺口", def: "A price zone created when a large impulsive candle (C2) moves so aggressively that C1's low and C3's high do not overlap — leaving an untraded gap inside C2's range. Markets tend to retrace back into the FVG to fill the inefficiency before resuming the original direction. FVG fill is a tendency, not a guarantee.", cat: "Technical" },
+  { en: "Gap and Crap", zh: "開高走低", def: "A price pattern where a stock opens significantly higher on strong sentiment, then fades and sells off through the session as early holders lock in profits. The opening high is often the day's high. Classic 買預期賣事實 execution pattern.", cat: "Price Action" },
+  { en: "一日行情 (One-Day Wonder)", zh: "一日行情", def: "A rally that is powerful for a single session but fails to sustain into subsequent days. Typically driven by a specific catalyst that gets fully priced in within one trading day. Warning signs: volume does not expand on Day 2, 家數差 turns positive at the high, 5日集中 fails to improve.", cat: "Price Action" },
+  { en: "借券賣出 / 借券回補", zh: "借券賣出／回補", def: "借券賣出 = institutions borrowing shares to sell short, creating downward price pressure. 借券回補 = buying back borrowed shares to return them, generating upward pressure. The C3 large-volume green candle at a bottom is often 借券回補 — not genuine accumulation. Monitor 借券餘額 daily to track outstanding exposure.", cat: "Market Structure" },
+  { en: "多殺多", zh: "多殺多", def: "Literal: longs killing longs. A cascade selling pattern where margin (融資) holders are forced to sell as prices decline, which pushes prices lower, triggering more forced selling. Most dangerous when 融資 balances are high. Paradoxically also the exhaustion point that often precedes a sharp rebound.", cat: "籌碼" },
+  { en: "Short Interest Balance", zh: "借券餘額", def: "The outstanding balance of borrowed shares that have been sold short but not yet returned to the lender. Tracked daily in Taiwan as a 籌碼 signal. Rising 借券餘額 = short exposure building, potential downward pressure ahead. Falling 借券餘額 = shorts covering (借券回補), generating buying pressure. Distinct from 融券 — 借券 is institutional borrowing via brokerages, typically larger scale and harder to detect in real time.", cat: "籌碼" },
 ];
 
-const cats = [...new Set(terms.map(t => t.cat))].sort();
-const sel = document.getElementById('catFilter');
-cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+// allTerms = built-in terms with any locally-imported additions/updates merged on top
+let allTerms = terms.slice();
+const customTerms = JSON.parse(localStorage.getItem('customTerms') || '[]');
+customTerms.forEach(p => mergeTermInPlace(allTerms, p));
+
+let cats = [];
+function refreshCategories() {
+  cats = [...new Set(allTerms.map(t => t.cat))].sort();
+  const sel = document.getElementById('catFilter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  sel.value = cats.includes(current) ? current : '';
+}
+refreshCategories();
+
+function mergeTermInPlace(list, entry) {
+  const idx = list.findIndex(t => t.en.trim().toLowerCase() === entry.en.trim().toLowerCase());
+  if (idx !== -1) list[idx] = entry; else list.push(entry);
+}
 
 // Called when a card is tapped — toggles flip and saves to localStorage when opened
 function flipCard(el) {
@@ -159,11 +213,11 @@ function render() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
   const grid = document.getElementById('grid');
-  const filtered = terms.filter(t =>
+  const filtered = allTerms.filter(t =>
     (!cat || t.cat === cat) &&
     (!q || t.en.toLowerCase().includes(q) || t.zh.includes(q) || t.def.toLowerCase().includes(q))
   );
-  document.getElementById('countBadge').textContent = `${filtered.length} / ${terms.length} terms`;
+  document.getElementById('countBadge').textContent = `${filtered.length} / ${allTerms.length} terms`;
   if (!filtered.length) {
     grid.innerHTML = '<div class="no-results"><span>🔍</span>No terms found</div>';
     return;
@@ -197,6 +251,164 @@ function restoreLastTerm() {
     card.classList.add('flipped', 'last-read-flash');
     card.addEventListener('animationend', () => card.classList.remove('last-read-flash'), { once: true });
   }, 600);
+}
+
+// --- Import from .docx -----------------------------------------------
+// Parses a Word file laid out as repeating Term/Chinese/Definition paragraphs
+// (matching the "Term (English)/Chinese/Definition" header used in this glossary's source doc).
+let pendingImport = [];
+
+async function handleImportFile(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  if (typeof JSZip === 'undefined') {
+    alert('Import needs an internet connection to load a small helper library. Check your connection and try again.');
+    return;
+  }
+  try {
+    const buffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(buffer);
+    const xml = await zip.file('word/document.xml').async('string');
+    const lines = extractParagraphs(xml);
+    const dataLines = trimToDataLines(lines);
+    if (dataLines.length === 0 || dataLines.length % 3 !== 0) {
+      alert(`Couldn't parse this file cleanly: found ${dataLines.length} text line(s) after the header, which isn't a multiple of 3 (Term / Chinese / Definition per entry). Check the Word file's formatting.\n\nLast lines found:\n` + dataLines.slice(-6).join('\n'));
+      return;
+    }
+    const parsed = [];
+    for (let i = 0; i < dataLines.length; i += 3) {
+      parsed.push({ en: dataLines[i], zh: dataLines[i + 1], def: dataLines[i + 2] });
+    }
+    showImportReview(parsed);
+  } catch (err) {
+    alert('Failed to read the .docx file: ' + err.message);
+  }
+}
+
+function extractParagraphs(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+  const paras = doc.getElementsByTagName('w:p');
+  const lines = [];
+  for (const p of paras) {
+    const runs = p.getElementsByTagName('w:t');
+    let text = '';
+    for (const t of runs) text += t.textContent;
+    text = text.trim();
+    if (text) lines.push(text);
+  }
+  return lines;
+}
+
+// Drops the title/subtitle/column-header lines before the data, and any
+// trailing disclaimer footer, leaving just the repeating en/zh/def lines.
+function trimToDataLines(lines) {
+  let start = 0;
+  const headerIdx = lines.findIndex(l => l.toLowerCase() === 'definition');
+  if (headerIdx !== -1) start = headerIdx + 1;
+  let end = lines.length;
+  for (let i = start; i < lines.length; i++) {
+    if (lines[i].startsWith('⚠️') || lines[i].toLowerCase().includes('not investment advice')) { end = i; break; }
+  }
+  return lines.slice(start, end);
+}
+
+function showImportReview(parsed) {
+  pendingImport = parsed.map(p => {
+    const existing = allTerms.find(t => t.en.trim().toLowerCase() === p.en.trim().toLowerCase());
+    const isUpdate = existing && (existing.zh !== p.zh || existing.def !== p.def);
+    const status = !existing ? 'new' : (isUpdate ? 'update' : 'unchanged');
+    return { en: p.en, zh: p.zh, def: p.def, cat: existing ? existing.cat : '', status, include: status !== 'unchanged' };
+  });
+  renderImportPanel();
+  document.getElementById('importOverlay').style.display = 'flex';
+}
+
+function renderImportPanel() {
+  const panel = document.getElementById('importPanel');
+  const newCount = pendingImport.filter(p => p.status === 'new').length;
+  const updateCount = pendingImport.filter(p => p.status === 'update').length;
+  const sameCount = pendingImport.filter(p => p.status === 'unchanged').length;
+  panel.innerHTML = `
+    <h2>Import Review</h2>
+    <p class="import-summary">${newCount} new · ${updateCount} changed · ${sameCount} unchanged (skipped)</p>
+    <div class="import-list">
+      ${pendingImport.map((p, i) => {
+        if (p.status === 'unchanged') return '';
+        const oldDef = p.status === 'update' ? allTerms.find(t => t.en.trim().toLowerCase() === p.en.trim().toLowerCase()).def : '';
+        return `
+        <div class="import-entry">
+          <label class="import-checkbox">
+            <input type="checkbox" ${p.include ? 'checked' : ''} onchange="pendingImport[${i}].include = this.checked">
+            <span class="import-status-tag ${p.status}">${p.status === 'new' ? 'NEW' : 'UPDATE'}</span>
+          </label>
+          <div class="import-fields">
+            <div class="import-term">${p.en}<span class="import-zh">${p.zh}</span></div>
+            ${p.status === 'update' ? `<div class="import-diff-old">was: ${oldDef}</div>` : ''}
+            <div class="import-def">${p.def}</div>
+            <select class="import-cat" onchange="setImportCat(${i}, this)">
+              <option value="">Choose category…</option>
+              ${cats.map(c => `<option value="${c}" ${p.cat === c ? 'selected' : ''}>${c}</option>`).join('')}
+              <option value="__new__">+ New category…</option>
+            </select>
+            <input type="text" class="import-newcat" id="newcat-${i}" placeholder="New category name" style="display:none" onchange="pendingImport[${i}].cat = this.value">
+          </div>
+        </div>
+      `;
+      }).join('')}
+    </div>
+    <div class="import-actions">
+      <button class="import-confirm" onclick="confirmImport()">Add / Update Selected</button>
+      <button class="import-cancel" onclick="cancelImport()">Cancel</button>
+    </div>
+  `;
+}
+
+function setImportCat(i, sel) {
+  if (sel.value === '__new__') {
+    document.getElementById('newcat-' + i).style.display = 'block';
+    pendingImport[i].cat = '';
+  } else {
+    pendingImport[i].cat = sel.value;
+    document.getElementById('newcat-' + i).style.display = 'none';
+  }
+}
+
+function confirmImport() {
+  const toApply = pendingImport.filter(p => p.include && p.status !== 'unchanged');
+  const missingCat = toApply.find(p => !p.cat);
+  if (missingCat) { alert(`Please choose a category for "${missingCat.en}".`); return; }
+  const customTerms = JSON.parse(localStorage.getItem('customTerms') || '[]');
+  toApply.forEach(p => {
+    const entry = { en: p.en, zh: p.zh, def: p.def, cat: p.cat };
+    mergeTermInPlace(allTerms, entry);
+    mergeTermInPlace(customTerms, entry);
+  });
+  localStorage.setItem('customTerms', JSON.stringify(customTerms));
+  refreshCategories();
+  render();
+  cancelImport();
+  alert(`Imported ${toApply.length} term(s).`);
+}
+
+function cancelImport() {
+  document.getElementById('importOverlay').style.display = 'none';
+  pendingImport = [];
+}
+
+// --- Export locally-imported terms, for syncing back into the source file ---
+async function exportCustomTerms() {
+  const customTerms = JSON.parse(localStorage.getItem('customTerms') || '[]');
+  if (!customTerms.length) { alert('No imported terms yet — nothing to export.'); return; }
+  const snippet = customTerms.map(t =>
+    `  { en: ${JSON.stringify(t.en)}, zh: ${JSON.stringify(t.zh)}, def: ${JSON.stringify(t.def)}, cat: ${JSON.stringify(t.cat)} },`
+  ).join('\n');
+  try {
+    await navigator.clipboard.writeText(snippet);
+    alert(`Copied ${customTerms.length} term(s) to clipboard as code — paste into the terms array (or send to Claude) to make them permanent on the live site.`);
+  } catch {
+    prompt(`Copy this and add it to the terms array:`, snippet);
+  }
 }
 
 render();
