@@ -91,7 +91,9 @@
   </select>
   <button class="import-btn" onclick="document.getElementById('importFile').click()">📥 Import .docx</button>
   <input type="file" id="importFile" accept=".docx" style="display:none" onchange="handleImportFile(event)">
+  <button class="import-btn" onclick="pushCustomTermsToGithub()">☁️ Push to GitHub</button>
   <button class="import-btn" onclick="exportCustomTerms()">⬇️ Export</button>
+  <button class="import-btn" onclick="manageGithubToken()">🔑</button>
   <span class="count-badge" id="countBadge"></span>
 </div>
 
@@ -408,6 +410,94 @@ async function exportCustomTerms() {
     alert(`Copied ${customTerms.length} term(s) to clipboard as code — paste into the terms array (or send to Claude) to make them permanent on the live site.`);
   } catch {
     prompt(`Copy this and add it to the terms array:`, snippet);
+  }
+}
+
+// --- Push imported terms straight to GitHub (skips the manual export/paste step) ---
+const GH_OWNER = 'dksbluesky';
+const GH_REPO = 'C2_sentence';
+const GH_PATH = 'investment_glossary.html';
+
+function getGithubToken() {
+  return localStorage.getItem('githubPAT') || '';
+}
+
+function manageGithubToken() {
+  const has = !!getGithubToken();
+  const input = prompt(
+    has
+      ? 'A GitHub token is already saved in this browser.\nPaste a new one to replace it, or clear the text and submit to remove it.'
+      : 'Paste a GitHub fine-grained Personal Access Token, scoped to the C2_sentence repo with "Contents: Read and write" permission.\n\nCreate one at github.com/settings/personal-access-tokens/new',
+    has ? '' : ''
+  );
+  if (input === null) return;
+  const token = input.trim();
+  if (token) { localStorage.setItem('githubPAT', token); alert('Token saved in this browser.'); }
+  else { localStorage.removeItem('githubPAT'); alert('Token cleared.'); }
+}
+
+function decodeBase64Utf8(b64) {
+  const binary = atob(b64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function encodeBase64Utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+async function pushCustomTermsToGithub() {
+  const customTerms = JSON.parse(localStorage.getItem('customTerms') || '[]');
+  if (!customTerms.length) { alert('No imported terms yet — nothing to push.'); return; }
+  let token = getGithubToken();
+  if (!token) {
+    const input = prompt('Paste a GitHub fine-grained Personal Access Token, scoped to the C2_sentence repo with "Contents: Read and write" permission.\n\nCreate one at github.com/settings/personal-access-tokens/new');
+    if (!input) return;
+    token = input.trim();
+    localStorage.setItem('githubPAT', token);
+  }
+  try {
+    const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`;
+    const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
+    if (!getRes.ok) {
+      const err = await getRes.json().catch(() => ({}));
+      throw new Error(`Couldn't read the live file (${getRes.status}): ${err.message || getRes.statusText}`);
+    }
+    const fileData = await getRes.json();
+    const currentHtml = decodeBase64Utf8(fileData.content);
+
+    const newEntries = customTerms
+      .filter(t => !currentHtml.includes(`en: ${JSON.stringify(t.en)}`))
+      .map(t => `  { en: ${JSON.stringify(t.en)}, zh: ${JSON.stringify(t.zh)}, def: ${JSON.stringify(t.def)}, cat: ${JSON.stringify(t.cat)} },\n`);
+
+    if (!newEntries.length) { alert('All imported terms are already in the live file — nothing new to push.'); return; }
+
+    const anchorIdx = currentHtml.indexOf('let allTerms = terms.slice();');
+    const closeIdx = anchorIdx === -1 ? -1 : currentHtml.lastIndexOf('\n];', anchorIdx);
+    if (closeIdx === -1) throw new Error('Could not locate the terms array in the live file — aborting to avoid corrupting it. Use Export and paste to Claude instead.');
+
+    const updatedHtml = currentHtml.slice(0, closeIdx + 1) + newEntries.join('') + currentHtml.slice(closeIdx + 1);
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `Add ${newEntries.length} term(s) via in-app import`,
+        content: encodeBase64Utf8(updatedHtml),
+        sha: fileData.sha
+      })
+    });
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(`Push failed (${putRes.status}): ${err.message || putRes.statusText}`);
+    }
+    alert(`Pushed ${newEntries.length} term(s) to GitHub. The live site updates in about a minute.`);
+  } catch (err) {
+    alert('Push failed: ' + err.message);
   }
 }
 
