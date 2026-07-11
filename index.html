@@ -276,6 +276,18 @@
 
   function flipCard(el) {
     el.classList.toggle('flipped');
+    if (el.classList.contains('flipped') && el.dataset.id) {
+      localStorage.setItem('lastReadSentence', el.dataset.id);
+    }
+  }
+
+  function restoreLastSentence() {
+    const lastId = localStorage.getItem('lastReadSentence');
+    if (!lastId) return;
+    const card = document.querySelector(`.card[data-id="${lastId}"]`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => card.classList.add('flipped'), 600);
   }
 
   function render() {
@@ -304,7 +316,7 @@
     grid.innerHTML = filtered.map(item => {
       const isFav = bookmarks.includes(item.id);
       return `
-        <div class="card" onclick="flipCard(this)">
+        <div class="card" data-id="${item.id}" onclick="flipCard(this)">
           <div class="card-inner">
             <div class="card-front">
               <div class="card-top">
@@ -330,6 +342,7 @@
 
   refreshCategories();
   render();
+  requestAnimationFrame(restoreLastSentence);
 </script>
 </body>
 </html>
