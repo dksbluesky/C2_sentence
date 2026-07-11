@@ -53,6 +53,26 @@
     .card { height: 180px; }
     .controls { top: 53px; }
   }
+
+  .import-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+  .import-panel { background: white; border-radius: 14px; max-width: 580px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 20px; }
+  .import-panel h2 { font-size: 17px; color: #2E4057; margin-bottom: 4px; }
+  .import-summary { font-size: 12px; color: #718096; margin-bottom: 14px; }
+  .import-list { display: flex; flex-direction: column; gap: 10px; }
+  .import-entry { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; }
+  .import-checkbox { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 2px; }
+  .import-status-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; white-space: nowrap; }
+  .import-status-tag.new { background: #C6F6D5; color: #276749; }
+  .import-status-tag.update { background: #FEEBC8; color: #975A16; }
+  .import-fields { flex: 1; min-width: 0; }
+  .import-original { font-size: 13px; font-weight: 700; color: #2E4057; }
+  .import-advanced { font-size: 12px; color: #4a5568; margin-top: 4px; line-height: 1.5; }
+  .import-scenario { font-size: 11px; color: #718096; margin-top: 3px; font-style: italic; }
+  .import-diff-old { font-size: 11px; color: #c53030; text-decoration: line-through; margin-top: 3px; }
+  .import-cat, .import-newcat { margin-top: 8px; padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 100%; }
+  .import-actions { display: flex; gap: 10px; margin-top: 16px; position: sticky; bottom: 0; background: white; padding-top: 8px; }
+  .import-confirm { flex: 1; background: #2E4057; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  .import-cancel { background: #e2e8f0; color: #2d3748; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -68,11 +88,21 @@
     <option value="">全部類別</option>
   </select>
   <button class="ctrl-btn" id="favToggle" onclick="toggleFavFilter()">❤️ 我的收藏 (<span id="favCount">0</span>)</button>
+  <button class="ctrl-btn" onclick="exportToExcel()">📊 Export .xlsx</button>
+  <button class="ctrl-btn" onclick="document.getElementById('importFile').click()">📥 Import .xlsx</button>
+  <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportFile(event)">
+  <button class="ctrl-btn" onclick="pushCustomSentencesToGithub()">☁️ Push to GitHub</button>
+  <button class="ctrl-btn" onclick="manageGithubToken()">🔑</button>
   <span class="count-badge" id="countBadge"></span>
 </div>
 
 <div class="grid" id="grid"></div>
 
+<div class="import-overlay" id="importOverlay" style="display:none">
+  <div class="import-panel" id="importPanel"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
   const rawData = [
     {"id": 1, "category": "日常感受", "scenario": "當你想表達一整天非常疲憊，且消耗了比預期更多的精力時。", "original": "I'm tired.", "advanced": "It's been one of those days where everything required just a little more energy than I expected."},
@@ -238,13 +268,22 @@
     {"id": 161, "category": "對話終結", "scenario": "溫暖地結束對話，並告知對方你永遠都在這裡，隨時準備聆聽。", "original": "I am here if you need to talk.", "advanced": "If you ever want to talk again, you know where to find me; I'm always here to listen."}
   ];
 
+  let allSentences = rawData.slice();
+  const customSentences = JSON.parse(localStorage.getItem('customSentences') || '[]');
+  customSentences.forEach(s => mergeById(allSentences, s));
+
   let bookmarks = JSON.parse(localStorage.getItem('user_favs_final') || '[]');
   let showFavsOnly = false;
+
+  function mergeById(list, entry) {
+    const idx = list.findIndex(t => t.id === entry.id);
+    if (idx !== -1) list[idx] = entry; else list.push(entry);
+  }
 
   function refreshCategories() {
     const sel = document.getElementById('catFilter');
     const current = sel.value;
-    const cats = [...new Set(rawData.map(d => d.category))].sort();
+    const cats = [...new Set(allSentences.map(d => d.category))].sort();
     sel.innerHTML = '<option value="">全部類別</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
     sel.value = cats.includes(current) ? current : '';
   }
@@ -297,7 +336,7 @@
     const cat = document.getElementById('catFilter').value;
     const grid = document.getElementById('grid');
 
-    const filtered = rawData.filter(item => {
+    const filtered = allSentences.filter(item => {
       if (showFavsOnly && !bookmarks.includes(item.id)) return false;
       if (cat && item.category !== cat) return false;
       if (q && !item.original.toLowerCase().includes(q) &&
@@ -308,7 +347,7 @@
     });
 
     document.getElementById('favCount').textContent = bookmarks.length;
-    document.getElementById('countBadge').textContent = `${filtered.length} / ${rawData.length} 句`;
+    document.getElementById('countBadge').textContent = `${filtered.length} / ${allSentences.length} 句`;
 
     if (!filtered.length) {
       grid.innerHTML = `<div class="no-results"><span>${showFavsOnly ? '❤️' : '🔍'}</span>${showFavsOnly ? '收藏清單是空的' : '找不到符合的句子'}</div>`;
@@ -340,6 +379,213 @@
         </div>
       `;
     }).join('');
+  }
+
+  // ── Export ──────────────────────────────────────────────────────────────
+  function exportToExcel() {
+    if (typeof XLSX === 'undefined') { alert('匯出程式庫尚未載入，請稍後再試。'); return; }
+    const wb = XLSX.utils.book_new();
+    const rows = [
+      ['ID', '類別', '情境', '原始表達', '進階用法'],
+      ...allSentences.map(s => [s.id, s.category, s.scenario, s.original, s.advanced])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:5},{wch:12},{wch:45},{wch:35},{wch:80}];
+    ws['!views'] = [{state:'frozen', ySplit:1}];
+    XLSX.utils.book_append_sheet(wb, ws, 'C2_Sentences');
+    XLSX.writeFile(wb, 'c2_sentences.xlsx');
+  }
+
+  // ── Import ──────────────────────────────────────────────────────────────
+  let _pendingImport = [];
+
+  function handleImportFile(event) {
+    const file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    if (typeof XLSX === 'undefined') { alert('匯入程式庫尚未載入，請稍後再試。'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const wb = XLSX.read(e.target.result, {type: 'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+        const parsed = rows.slice(1)
+          .filter(r => r.length >= 4 && (r[3] || r[4]))
+          .map(r => ({
+            id:       parseInt(r[0]) || null,
+            category: String(r[1] || '').trim(),
+            scenario: String(r[2] || '').trim(),
+            original: String(r[3] || '').trim(),
+            advanced: String(r[4] || '').trim()
+          }))
+          .filter(s => s.original && s.advanced);
+        if (!parsed.length) { alert('找不到有效的句子資料。'); return; }
+        showImportReview(parsed);
+      } catch(err) { alert('讀取失敗：' + err.message); }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function showImportReview(parsed) {
+    _pendingImport = parsed.map(entry => {
+      let status = 'new', old = null;
+      if (entry.id) {
+        const existing = allSentences.find(s => s.id === entry.id);
+        if (existing) {
+          const same = existing.original === entry.original &&
+                       existing.advanced === entry.advanced &&
+                       existing.scenario === entry.scenario &&
+                       existing.category === entry.category;
+          status = same ? 'unchanged' : 'update';
+          old = existing;
+        }
+      }
+      return { ...entry, status, old };
+    });
+    renderImportPanel();
+    document.getElementById('importOverlay').style.display = 'flex';
+  }
+
+  function renderImportPanel() {
+    const cats = [...new Set(allSentences.map(s => s.category))].sort();
+    const newCnt = _pendingImport.filter(d => d.status === 'new').length;
+    const updCnt = _pendingImport.filter(d => d.status === 'update').length;
+    const sameCnt = _pendingImport.filter(d => d.status === 'unchanged').length;
+    document.getElementById('importPanel').innerHTML = `
+      <h2>📥 Import Review</h2>
+      <div class="import-summary">${_pendingImport.length} 筆 &nbsp;·&nbsp; ${newCnt} 新增 &nbsp;·&nbsp; ${updCnt} 更新 &nbsp;·&nbsp; ${sameCnt} 無變更</div>
+      <div class="import-list">
+        ${_pendingImport.map((entry, i) => `
+          <div class="import-entry">
+            <div class="import-checkbox">
+              <input type="checkbox" id="ic${i}" ${entry.status !== 'unchanged' ? 'checked' : ''} ${entry.status === 'unchanged' ? 'disabled' : ''}>
+              <span class="import-status-tag ${entry.status}">${entry.status === 'new' ? 'NEW' : entry.status === 'update' ? 'UPDATE' : '─'}</span>
+            </div>
+            <div class="import-fields">
+              <div class="import-original">${entry.original}</div>
+              ${entry.old && entry.old.original !== entry.original ? `<div class="import-diff-old">${entry.old.original}</div>` : ''}
+              <div class="import-advanced">${entry.advanced}</div>
+              ${entry.old && entry.old.advanced !== entry.advanced ? `<div class="import-diff-old">${entry.old.advanced}</div>` : ''}
+              <div class="import-scenario">${entry.scenario}</div>
+              <select class="import-cat" id="icat${i}" onchange="toggleNewCat(${i},this.value)">
+                ${cats.map(c => `<option value="${c}"${c === entry.category ? ' selected' : ''}>${c}</option>`).join('')}
+                <option value="__new__">+ 新類別…</option>
+              </select>
+              <input class="import-newcat" id="inewcat${i}" placeholder="輸入新類別名稱" style="display:none">
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="import-actions">
+        <button class="import-confirm" onclick="confirmImport()">✅ 確認匯入</button>
+        <button class="import-cancel" onclick="document.getElementById('importOverlay').style.display='none'">取消</button>
+      </div>
+    `;
+  }
+
+  function toggleNewCat(i, val) {
+    document.getElementById(`inewcat${i}`).style.display = val === '__new__' ? 'block' : 'none';
+  }
+
+  function confirmImport() {
+    let maxId = Math.max(...allSentences.map(s => s.id), 161);
+    const stored = JSON.parse(localStorage.getItem('customSentences') || '[]');
+    _pendingImport.forEach((entry, i) => {
+      const cb = document.getElementById(`ic${i}`);
+      if (!cb || !cb.checked) return;
+      const catSel = document.getElementById(`icat${i}`);
+      let cat = catSel ? catSel.value : entry.category;
+      if (cat === '__new__') {
+        const inp = document.getElementById(`inewcat${i}`);
+        cat = (inp && inp.value.trim()) || entry.category;
+      }
+      const final = { id: entry.id || (++maxId), category: cat, scenario: entry.scenario, original: entry.original, advanced: entry.advanced };
+      mergeById(allSentences, final);
+      const si = stored.findIndex(s => s.id === final.id);
+      if (si !== -1) stored[si] = final; else stored.push(final);
+    });
+    localStorage.setItem('customSentences', JSON.stringify(stored));
+    document.getElementById('importOverlay').style.display = 'none';
+    refreshCategories();
+    render();
+  }
+
+  // ── GitHub Push ──────────────────────────────────────────────────────────
+  const GH_OWNER = 'dksbluesky';
+  const GH_REPO  = 'C2_sentence';
+  const GH_PATH  = 'index.html';
+
+  function manageGithubToken() {
+    const cur = localStorage.getItem('githubPAT') ? '已儲存' : '未設定';
+    const v = prompt(`GitHub PAT 狀態：${cur}\n\n輸入新 Token 儲存，輸入 CLEAR 刪除，或取消。`);
+    if (v === null) return;
+    if (v.trim().toUpperCase() === 'CLEAR') { localStorage.removeItem('githubPAT'); alert('Token 已刪除。'); }
+    else if (v.trim()) { localStorage.setItem('githubPAT', v.trim()); alert('Token 已儲存。'); }
+  }
+
+  function decodeBase64Utf8(b64) {
+    const bin = atob(b64.replace(/\n/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  function encodeBase64Utf8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  async function pushCustomSentencesToGithub() {
+    const stored = JSON.parse(localStorage.getItem('customSentences') || '[]');
+    if (!stored.length) { alert('沒有自訂句子可推送。先匯入新句子再試。'); return; }
+
+    let token = localStorage.getItem('githubPAT');
+    if (!token) {
+      token = prompt('請輸入 GitHub Personal Access Token：');
+      if (!token) return;
+      localStorage.setItem('githubPAT', token.trim());
+      token = token.trim();
+    }
+
+    try {
+      const getResp = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (!getResp.ok) throw new Error(`GET failed: ${getResp.status}`);
+      const { sha, content } = await getResp.json();
+      let html = decodeBase64Utf8(content);
+
+      const rawIds = new Set(rawData.map(s => s.id));
+      const toInsert = stored.filter(s => !rawIds.has(s.id));
+      if (!toInsert.length) { alert('所有自訂句子已在 rawData 中，無需推送。'); return; }
+
+      const anchorStr = 'let allSentences = rawData.slice();';
+      const anchorIdx = html.indexOf(anchorStr);
+      if (anchorIdx === -1) throw new Error('找不到插入錨點。');
+      const insertionIdx = html.lastIndexOf('\n  ];', anchorIdx);
+      if (insertionIdx === -1) throw new Error('找不到 rawData 結尾。');
+
+      const newLines = toInsert.map(s =>
+        `    {"id": ${s.id}, "category": ${JSON.stringify(s.category)}, "scenario": ${JSON.stringify(s.scenario)}, "original": ${JSON.stringify(s.original)}, "advanced": ${JSON.stringify(s.advanced)}}`
+      ).join(',\n');
+
+      html = html.slice(0, insertionIdx) + ',\n' + newLines + html.slice(insertionIdx);
+
+      const putResp = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Add ${toInsert.length} new C2 sentence(s) via browser import`,
+          content: encodeBase64Utf8(html),
+          sha
+        })
+      });
+      if (!putResp.ok) { const e = await putResp.json(); throw new Error(e.message || putResp.status); }
+      alert(`✅ 成功推送 ${toInsert.length} 筆句子到 GitHub！`);
+    } catch(err) { alert('推送失敗：' + err.message); }
   }
 
   refreshCategories();
