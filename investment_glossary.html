@@ -208,6 +208,8 @@ function mergeTermInPlace(list, entry) {
 
 // Called when a card is tapped — toggles flip and saves to localStorage when opened
 function flipCard(el) {
+  const prev = document.querySelector('.card.flipped');
+  if (prev && prev !== el) prev.classList.remove('flipped');
   el.classList.toggle('flipped');
   if (el.classList.contains('flipped')) {
     localStorage.setItem('lastReadTerm', el.dataset.term);

@@ -275,6 +275,8 @@
   }
 
   function flipCard(el) {
+    const prev = document.querySelector('.card.flipped');
+    if (prev && prev !== el) prev.classList.remove('flipped');
     el.classList.toggle('flipped');
     if (el.classList.contains('flipped') && el.dataset.id) {
       localStorage.setItem('lastReadSentence', el.dataset.id);
