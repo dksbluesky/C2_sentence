@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2E4057">
 <title>📚 進階英文表達學習</title>
+<link rel="manifest" href="manifest-c2-learning.webmanifest">
+<link rel="apple-touch-icon" href="icons/c2-learning-192.png">
+<link rel="icon" sizes="192x192" href="icons/c2-learning-192.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
@@ -591,6 +595,11 @@
   refreshCategories();
   render();
   requestAnimationFrame(restoreLastSentence);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch((error) => console.warn('Service worker registration failed:', error));
+}
 </script>
 </body>
 </html>

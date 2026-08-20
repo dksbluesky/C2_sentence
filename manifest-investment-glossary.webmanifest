@@ -1,0 +1,13 @@
+{
+  "name": "Investment Terms Glossary",
+  "short_name": "Investment Terms",
+  "start_url": "./investment_glossary.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#14532D",
+  "background_color": "#f0f4f8",
+  "icons": [
+    { "src": "icons/investment-glossary-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/investment-glossary-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
