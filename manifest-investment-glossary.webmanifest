@@ -1,6 +1,7 @@
 {
   "name": "Investment Terms Glossary",
   "short_name": "Investment Terms",
+  "id": "./investment-glossary-pwa",
   "start_url": "./investment_glossary.html",
   "scope": "./",
   "display": "standalone",
